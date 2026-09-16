@@ -4,6 +4,14 @@ MVP local executado com Python 3.14, FastAPI e SQLite. O fluxo manual de
 receitas já permite cadastrar, consultar, editar e excluir receitas com
 ingredientes, preparo, tags, história/origem e imagem opcional.
 
+## Documentação arquitetural
+
+- [Arquitetura aprovada](docs/ARCHITECTURE.md): decisões, camadas, modelo de
+  domínio e backlog técnico.
+- [Diagramas arquiteturais](docs/ARCHITECTURE_DIAGRAMS.md): visões Mermaid do
+  estado implementado após o Prompt 4 e do ponto de extensão planejado para a
+  importação assistida.
+
 ## Requisitos
 
 - Python 3.14;
