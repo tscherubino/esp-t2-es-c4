@@ -9,8 +9,8 @@ ingredientes, preparo, tags, história/origem e imagem opcional.
 - [Arquitetura aprovada](docs/ARCHITECTURE.md): decisões, camadas, modelo de
   domínio e backlog técnico.
 - [Diagramas arquiteturais](docs/ARCHITECTURE_DIAGRAMS.md): visões Mermaid do
-  estado implementado após o Prompt 5 e do ponto de extensão planejado para a
-  importação assistida.
+  estado implementado após o Prompt 7, incluindo receitas, importação assistida
+  e lista de compras.
 
 ## Requisitos
 
@@ -125,9 +125,18 @@ Para análise estruturada via API, use `POST /api/recipes/import/analyze` com
 campos estruturados, avisos e os `confidence_score`s. A receita não é salva
 definitivamente até a revisão humana.
 
-O botão **Lista de compras** leva a uma tela de estado vazio enquanto a geração
-da lista ainda não foi implementada. A tela já apresenta o caminho de retorno
-ao acervo e permanece sem criar regras de negócio ou persistência adicional.
+## Lista de compras
+
+1. Acesse <http://127.0.0.1:8000/shopping-list>.
+2. Selecione uma ou mais receitas e informe o nome da lista.
+3. Gere a lista para consolidar ingredientes com mesmo nome e unidade.
+4. Edite, marque como comprado, remova ou adicione itens manualmente.
+5. Use **Copiar lista** ou **Abrir como texto** para levar a lista ao celular.
+
+Também é possível gerar uma lista diretamente pelo botão **Gerar lista de
+compras** na página de uma receita. Quantidades numéricas são somadas apenas
+quando a unidade é igual; conversões entre unidades não são realizadas. Itens
+com observações são mantidos com suas observações.
 
 ## Verificação
 
@@ -164,6 +173,6 @@ confirmação.
 - a importação usa somente providers locais mockados ou baseados em regras;
 - não há OCR ou IA real;
 - não há autenticação real;
-- não há lista de compras;
+  - a lista de compras não realiza conversões complexas de unidades;
 - Tailwind é carregado via CDN e, portanto, requer rede apenas para os estilos
   no navegador; a aplicação e o banco continuam locais.

@@ -167,6 +167,7 @@ class ShoppingListItemCreate(SchemaBase):
     description: str = Field(min_length=1, max_length=255)
     quantity: Optional[str] = Field(default=None, max_length=50)
     unit: Optional[str] = Field(default=None, max_length=50)
+    notes: Optional[str] = Field(default=None, max_length=255)
     recipe_id: Optional[int] = None
     is_checked: bool = False
 
@@ -175,6 +176,7 @@ class ShoppingListItemUpdate(SchemaBase):
     description: Optional[str] = Field(default=None, min_length=1, max_length=255)
     quantity: Optional[str] = Field(default=None, max_length=50)
     unit: Optional[str] = Field(default=None, max_length=50)
+    notes: Optional[str] = Field(default=None, max_length=255)
     recipe_id: Optional[int] = None
     is_checked: Optional[bool] = None
 
@@ -185,6 +187,7 @@ class ShoppingListItemRead(TimestampSchema):
     description: str
     quantity: Optional[str]
     unit: Optional[str]
+    notes: Optional[str]
     is_checked: bool
 
 

@@ -25,4 +25,4 @@ def test_shopping_list_page_is_available() -> None:
 
     assert response.status_code == 200
     assert "Lista de compras" in response.text
-    assert "Ainda não há uma lista" in response.text
+    assert "Gerar uma nova lista" in response.text

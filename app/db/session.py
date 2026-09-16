@@ -24,6 +24,7 @@ def initialize_database() -> None:
     Base.metadata.create_all(bind=engine)
     _ensure_recipe_columns()
     _ensure_import_columns()
+    _ensure_shopping_columns()
 
 
 def _ensure_recipe_columns() -> None:
@@ -64,6 +65,19 @@ def _ensure_import_columns() -> None:
         for name, sql_type in additions.items():
             if name not in columns:
                 connection.execute(text(f"ALTER TABLE import_jobs ADD COLUMN {name} {sql_type}"))
+
+
+def _ensure_shopping_columns() -> None:
+    """Atualiza bancos locais existentes com observações dos itens."""
+
+    inspector = inspect(engine)
+    if "shopping_list_items" not in inspector.get_table_names():
+        return
+
+    columns = {column["name"] for column in inspector.get_columns("shopping_list_items")}
+    if "notes" not in columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE shopping_list_items ADD COLUMN notes VARCHAR(255)"))
 
 
 def get_db() -> Generator[Session, None, None]:

@@ -155,6 +155,7 @@ class ShoppingListItem(PublicIdMixin, TimestampMixin, Base):
     description: Mapped[str] = mapped_column(String(255), nullable=False)
     quantity: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     is_checked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     shopping_list: Mapped["ShoppingList"] = relationship(back_populates="items")

@@ -3,9 +3,9 @@
 ## 1. Objetivo
 
 Documentar visualmente a arquitetura efetivamente implementada do MVP local
-após os Prompts 01–05. Este documento complementa
+após os Prompts 01–07. Este documento complementa
 `docs/ARCHITECTURE.md`, facilitando a compreensão das camadas, dos fluxos de
-receitas e do ponto de extensão da importação assistida.
+receitas, da importação assistida e da lista de compras.
 
 ## 2. Escopo atual
 
@@ -18,6 +18,8 @@ Existem dois caminhos separados para criar receitas:
   pelo usuário.
 - **Fluxo B — Importação assistida:** extrai uma sugestão com providers locais,
   apresenta uma tela de revisão e só então persiste a receita confirmada.
+- **Fluxo C — Lista de compras:** seleciona uma ou mais receitas, consolida os
+  ingredientes de forma simples e permite ajustes manuais.
 
 Não há APIs externas, chaves de API, OCR real, IA real, RAG, PostgreSQL,
 pgvector, Docker, storage externo ou autenticação real.
@@ -51,6 +53,7 @@ flowchart TB
     subgraph Application[Aplicação]
         RecipeService[recipe_service.py]
         ImportService[import_service.py]
+        ShoppingService[shopping_service.py]
         Storage[storage.py]
         Providers[processors\nproviders locais]
     end
@@ -59,6 +62,7 @@ flowchart TB
         Schemas[Pydantic v2]
         Models[SQLAlchemy models]
         Repository[recipe_repository.py]
+        ShoppingRepository[shopping_repository.py]
         SQLite[(SQLite\ndata/app.db)]
         Uploads[(uploads/)]
     end
@@ -68,6 +72,7 @@ flowchart TB
     Routers --> Templates
     Routers --> RecipeService
     Routers --> ImportService
+    Routers --> ShoppingService
     Routers -.-> HTMX
     RecipeService --> Repository
     RecipeService --> Models
@@ -75,13 +80,16 @@ flowchart TB
     ImportService --> Providers
     ImportService --> Models
     ImportService --> Storage
+    ShoppingService --> ShoppingRepository
     Repository --> Models
+    ShoppingRepository --> Models
     Models --> SQLite
     Storage --> Uploads
 ```
 
 O Fluxo A usa `RecipeService`; o Fluxo B usa `RecipeImportService` e providers
-locais antes de chegar à persistência definitiva.
+locais antes de chegar à persistência definitiva; o Fluxo C usa
+`ShoppingListService` para consolidar e editar itens.
 
 ## 5. Componentes e Módulos
 
@@ -91,13 +99,15 @@ flowchart TB
         Main[app/main.py]
         RecipesRouter[app/routers/recipes.py]
         ImportsRouter[app/routers/imports.py]
-        TemplatesDir[app/templates/\nbase, index, recipes]
+        ShoppingRouter[app/routers/shopping.py]
+        TemplatesDir[app/templates/\nbase, index, recipes, shopping_list]
     end
 
     subgraph Application[Application]
         RecipeSvc[app/services/recipe_service.py]
         ImportSvc[app/services/import_service.py\nRecipeImportService]
         StorageSvc[app/services/storage.py]
+        ShoppingSvc[app/services/shopping_service.py\nShoppingItemInput]
     end
 
     subgraph Processing[Importação local]
@@ -114,6 +124,7 @@ flowchart TB
         DomainSchemas[app/schemas/domain.py]
         Entities[app/models/entities.py]
         Repo[app/repositories/recipe_repository.py]
+        ShoppingRepo[app/repositories/shopping_repository.py]
         Session[app/db/session.py]
         DB[(data/app.db)]
         Uploads[(uploads/)]
@@ -121,12 +132,15 @@ flowchart TB
 
     Main --> RecipesRouter
     Main --> ImportsRouter
+    Main --> ShoppingRouter
     Main --> Session
     RecipesRouter --> DomainSchemas
     RecipesRouter --> RecipeSvc
     RecipesRouter --> TemplatesDir
     ImportsRouter --> ImportSvc
     ImportsRouter --> TemplatesDir
+    ShoppingRouter --> ShoppingSvc
+    ShoppingRouter --> TemplatesDir
     RecipeSvc --> Repo
     RecipeSvc --> Entities
     RecipeSvc --> StorageSvc
@@ -134,19 +148,22 @@ flowchart TB
     ImportSvc --> ParserInterface
     ImportSvc --> Structured
     ImportSvc --> Entities
+    ShoppingSvc --> ShoppingRepo
+    ShoppingSvc --> Entities
     OCRInterface -.-> MockOCR
     OCRInterface -.-> ManualOCR
     ParserInterface -.-> MockParser
     ParserInterface -.-> RuleParser
     Repo --> Entities
+    ShoppingRepo --> Entities
     Session --> Entities
     Session --> DB
     StorageSvc --> Uploads
 ```
 
 Os providers exibidos são implementações locais e substituíveis; não há
-integração externa. Os nomes `schemas/import.py` e `processors/` representam a
-organização desta etapa e deverão corresponder aos módulos criados no código.
+integração externa. A lista de compras usa um serviço explícito e não depende
+de conversão avançada de unidades.
 
 ## 6. Modelo de Dados
 
@@ -223,6 +240,7 @@ erDiagram
         string description
         string quantity
         string unit
+        string notes
         boolean is_checked
     }
     IMPORT_JOB {
@@ -325,6 +343,33 @@ flowchart LR
     Delete -.->|remove arquivo| Files
 ```
 
+## 8.1 Fluxo de lista de compras
+
+```mermaid
+sequenceDiagram
+    participant User as Usuário
+    participant UI as shopping_list.html
+    participant Router as shopping.py
+    participant Service as ShoppingListService
+    participant DB as SQLite
+
+    User->>UI: seleciona uma ou mais receitas
+    UI->>Router: POST /shopping-list/generate
+    Router->>Service: create_list_from_recipes(...)
+    Service->>Service: consolida nome + unidade
+    Service->>DB: persiste ShoppingList e itens
+    DB-->>UI: lista editável
+    User->>UI: edita, marca, remove ou adiciona item
+    UI->>Router: POST operação do item
+    Router->>Service: atualiza estado
+    Service->>DB: COMMIT
+```
+
+Quantidades numéricas são somadas apenas quando o nome normalizado e a unidade
+normalizada coincidem. Unidades diferentes, quantidades textuais e observações
+não são convertidas ou descartadas; quando necessário, os itens permanecem
+separados e a interface informa o motivo.
+
 ## 9. Arquitetura de Execução Local
 
 ```mermaid
@@ -357,7 +402,7 @@ flowchart TB
 Esta é uma arquitetura local, não de produção. Tailwind CSS é carregado pelo
 navegador via CDN, sem tornar serviços externos dependência da aplicação.
 
-## 10. Ponto de Extensão para Importação Assistida
+## 10. Importação assistida e pontos de extensão
 
 ```mermaid
 flowchart LR
@@ -382,12 +427,12 @@ flowchart LR
     ImportService --> Review
     Review -->|usuário confirma/edita| Persist
 
-    classDef planned stroke-dasharray: 5 5;
-    class OCR,Parser,MockOCR,ManualOCR,MockLLM,RuleParser,Review planned;
 ```
 
-Os componentes tracejados relacionados a providers e revisão representam o
-fluxo planejado desta etapa. Não existem APIs externas nem providers reais.
+Os providers locais e a revisão humana estão implementados. As interfaces
+`OCRProvider` e `LLMRecipeParser` continuam sendo pontos de extensão para
+providers reais futuros, sem alterar o fluxo de revisão. Não existem APIs
+externas nem providers reais no MVP.
 
 ## 11. Observações Arquiteturais
 
@@ -405,7 +450,7 @@ fluxo planejado desta etapa. Não existem APIs externas nem providers reais.
 - providers são mocks ou regras locais, não OCR/IA reais;
 - a tela de revisão é parte do fluxo de importação e não substitui o cadastro
   manual;
-- listas de compras possuem modelo, mas não fluxo web nesta etapa;
+- a lista de compras não converte unidades nem tenta equivalências complexas;
 - autenticação real e multiusuário continuam fora do MVP.
 
 ### Evoluções futuras
