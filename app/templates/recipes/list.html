@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Receitas — {{ app_name }}{% endblock %}
+
+{% block content %}
+  <div class="mb-8 flex items-center justify-between gap-4">
+    <div>
+      <p class="text-sm font-medium uppercase tracking-wide text-amber-700">Acervo demo</p>
+      <h1 class="text-3xl font-bold">Receitas</h1>
+    </div>
+    <div class="flex gap-2">
+      <a class="rounded-lg border border-stone-300 px-4 py-2 font-medium" href="/recipes/import">Importar</a>
+      <a class="rounded-lg bg-amber-700 px-4 py-2 font-medium text-white" href="/recipes/new">Nova receita</a>
+    </div>
+  </div>
+
+  {% if recipes %}
+    <div class="grid gap-4">
+      {% for recipe in recipes %}
+        <a class="rounded-xl bg-white p-5 shadow-sm transition hover:shadow-md" href="/recipes/{{ recipe.public_id }}">
+          <h2 class="text-xl font-semibold">{{ recipe.title }}</h2>
+          <p class="mt-2 text-sm text-stone-600">
+            {% if recipe.servings %}{{ recipe.servings }} porções{% endif %}
+            {% if recipe.prep_time_minutes %} · {{ recipe.prep_time_minutes }} min{% endif %}
+          </p>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="rounded-xl bg-white p-8 text-center shadow-sm">
+      <p class="text-stone-600">Nenhuma receita cadastrada ainda.</p>
+      <a class="mt-4 inline-block font-medium text-amber-700" href="/recipes/new">Cadastrar a primeira receita →</a>
+    </div>
+  {% endif %}
+{% endblock %}

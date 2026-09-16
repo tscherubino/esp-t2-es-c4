@@ -30,6 +30,8 @@ class UserRead(TimestampSchema):
 
 class RecipeCreate(SchemaBase):
     title: str = Field(min_length=1, max_length=200)
+    servings: Optional[int] = Field(default=None, ge=1)
+    prep_time_minutes: Optional[int] = Field(default=None, ge=0)
     original_text: Optional[str] = None
     origin_story: Optional[str] = None
     user_public_id: str
@@ -37,12 +39,31 @@ class RecipeCreate(SchemaBase):
 
 class RecipeUpdate(SchemaBase):
     title: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    servings: Optional[int] = Field(default=None, ge=1)
+    prep_time_minutes: Optional[int] = Field(default=None, ge=0)
     original_text: Optional[str] = None
     origin_story: Optional[str] = None
 
 
+class RecipeManualInput(SchemaBase):
+    """Entrada já validada para criação/edição pelo formulário manual."""
+
+    title: str = Field(min_length=1, max_length=200)
+    servings: Optional[int] = Field(default=None, ge=1)
+    prep_time_minutes: Optional[int] = Field(default=None, ge=0)
+    original_text: Optional[str] = None
+    origin_story: Optional[str] = None
+    ingredient_descriptions: list[str] = Field(default_factory=list)
+    ingredient_quantities: list[str] = Field(default_factory=list)
+    ingredient_units: list[str] = Field(default_factory=list)
+    step_instructions: list[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
+
+
 class RecipeRead(TimestampSchema):
     title: str
+    servings: Optional[int]
+    prep_time_minutes: Optional[int]
     original_text: Optional[str]
     origin_story: Optional[str]
     user_id: int

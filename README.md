@@ -1,9 +1,8 @@
 # Livro Vivo de Receitas
 
-Estrutura inicial do MVP local, executada com Python 3.14, FastAPI e SQLite.
-Nesta etapa existem apenas a página inicial, o health check, a configuração
-básica de banco e os diretórios locais. Modelos de receitas, ingredientes e
-lista de compras serão implementados em ciclos posteriores.
+MVP local executado com Python 3.14, FastAPI e SQLite. O fluxo manual de
+receitas já permite cadastrar, consultar, editar e excluir receitas com
+ingredientes, preparo, tags, história/origem e imagem opcional.
 
 ## Requisitos
 
@@ -70,6 +69,19 @@ uvicorn app.main:app --reload
 
 Abra <http://127.0.0.1:8000/> no navegador.
 
+## Fluxo manual de receitas
+
+1. Acesse <http://127.0.0.1:8000/recipes>.
+2. Clique em **Nova receita**.
+3. Preencha título, porções, tempo, ingredientes, preparo, tags, história/origem
+   e, opcionalmente, uma imagem JPEG, PNG ou WebP de até 5 MB.
+4. Salve para consultar a página de detalhe.
+5. Use **Editar** ou **Excluir** na página da receita.
+
+Também estão disponíveis `/api/recipes` e `/api/recipes/{public_id}` como
+endpoints JSON iniciais. A rota `/recipes/import` preserva texto e imagem e
+cria uma importação pendente; IA e OCR ainda não são executados.
+
 ## Verificação
 
 Página inicial:
@@ -98,8 +110,8 @@ pytest
 
 ## Limitações desta etapa
 
-- não há páginas CRUD ou serviços de receitas;
-- não há importação, OCR ou IA;
+- a importação ainda não estrutura automaticamente o conteúdo;
+- não há OCR ou IA real;
 - não há autenticação real;
 - não há lista de compras;
 - Tailwind é carregado via CDN e, portanto, requer rede apenas para os estilos

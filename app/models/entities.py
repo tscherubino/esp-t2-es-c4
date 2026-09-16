@@ -1,6 +1,6 @@
 """Entidades SQLAlchemy do modelo inicial do MVP."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional
 from uuid import uuid4
 
@@ -17,9 +17,11 @@ def new_public_id() -> str:
 
 
 class TimestampMixin:
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        default=lambda: datetime.now(UTC), nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False
     )
 
 
@@ -46,6 +48,8 @@ class Recipe(PublicIdMixin, TimestampMixin, Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
+    servings: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    prep_time_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     original_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     origin_story: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 

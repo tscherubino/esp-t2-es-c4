@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% set editing = mode == "edit" %}
+{% block title %}{% if editing %}Editar{% else %}Nova{% endif %} receita — {{ app_name }}{% endblock %}
+
+{% block content %}
+  <div class="mb-8 flex items-center justify-between">
+    <div>
+      <a class="text-sm text-amber-700" href="/recipes">← Voltar para receitas</a>
+      <h1 class="mt-2 text-3xl font-bold">{% if editing %}Editar receita{% else %}Nova receita{% endif %}</h1>
+    </div>
+  </div>
+
+  {% if error %}<div class="mb-6 rounded-lg bg-red-50 p-4 text-red-800">{{ error }}</div>{% endif %}
+
+  <form class="space-y-6" method="post" enctype="multipart/form-data" action="{% if editing %}/recipes/{{ recipe.public_id }}/edit{% else %}/recipes{% endif %}">
+    <section class="rounded-xl bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-xl font-semibold">Informações básicas</h2>
+      <div class="grid gap-4 md:grid-cols-3">
+        <label class="md:col-span-3">Título *<input required maxlength="200" class="mt-1 w-full rounded-lg border p-2" name="title" value="{{ recipe.title if recipe else '' }}"></label>
+        <label>Porções<input min="1" class="mt-1 w-full rounded-lg border p-2" name="servings" type="number" value="{{ recipe.servings if recipe and recipe.servings else '' }}"></label>
+        <label>Tempo (minutos)<input min="0" class="mt-1 w-full rounded-lg border p-2" name="prep_time_minutes" type="number" value="{{ recipe.prep_time_minutes if recipe and recipe.prep_time_minutes else '' }}"></label>
+        <label class="md:col-span-3">História/origem<textarea class="mt-1 min-h-24 w-full rounded-lg border p-2" name="origin_story">{{ recipe.origin_story if recipe and recipe.origin_story else '' }}</textarea></label>
+      </div>
+    </section>
+
+    <section class="rounded-xl bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-xl font-semibold">Ingredientes</h2>
+      <div class="space-y-2">
+        {% for i in range(5) %}
+          {% set ingredient = recipe.ingredients[i] if recipe and i < recipe.ingredients|length else none %}
+          <div class="grid gap-2 md:grid-cols-12">
+            <input class="rounded-lg border p-2 md:col-span-6" name="ingredient_descriptions" placeholder="Ingrediente" value="{{ ingredient.description if ingredient else '' }}">
+            <input class="rounded-lg border p-2 md:col-span-3" name="ingredient_quantities" placeholder="Quantidade" value="{{ ingredient.quantity if ingredient and ingredient.quantity else '' }}">
+            <input class="rounded-lg border p-2 md:col-span-3" name="ingredient_units" placeholder="Unidade" value="{{ ingredient.unit if ingredient and ingredient.unit else '' }}">
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="rounded-xl bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-xl font-semibold">Modo de preparo</h2>
+      {% for i in range(5) %}
+        {% set step = recipe.preparation_steps[i] if recipe and i < recipe.preparation_steps|length else none %}
+        <label class="mb-3 block">Etapa {{ i + 1 }}<textarea class="mt-1 min-h-16 w-full rounded-lg border p-2" name="step_instructions">{{ step.instruction if step else '' }}</textarea></label>
+      {% endfor %}
+    </section>
+
+    <section class="rounded-xl bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-xl font-semibold">Tags e imagem</h2>
+      <label class="block">Tags <span class="text-sm text-stone-500">(uma por campo)</span>
+        {% for link in recipe.recipe_tags if recipe %}<input class="mt-1 w-full rounded-lg border p-2" name="tags" value="{{ link.tag.name }}">{% endfor %}
+        <input class="mt-1 w-full rounded-lg border p-2" name="tags" placeholder="ex.: família, sobremesa">
+      </label>
+      <label class="mt-4 block">Imagem original (opcional)<input accept="image/jpeg,image/png,image/webp" class="mt-1 w-full rounded-lg border p-2" name="image" type="file"></label>
+    </section>
+
+    <button class="rounded-lg bg-amber-700 px-5 py-3 font-semibold text-white" type="submit">Salvar receita</button>
+  </form>
+{% endblock %}

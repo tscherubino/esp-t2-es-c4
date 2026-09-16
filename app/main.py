@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.core.config import settings
 from app.db.session import initialize_database
+from app.routers import imports, recipes
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -26,6 +27,9 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
+app.include_router(imports.router)
+app.include_router(recipes.router)
+app.include_router(recipes.api_router)
 
 
 @app.get("/", include_in_schema=False)
