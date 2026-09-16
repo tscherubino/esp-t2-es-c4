@@ -11,6 +11,8 @@ ingredientes, preparo, tags, história/origem e imagem opcional.
 - [Diagramas arquiteturais](docs/ARCHITECTURE_DIAGRAMS.md): visões Mermaid do
   estado implementado após o Prompt 7, incluindo receitas, importação assistida
   e lista de compras.
+- [Segurança e privacidade](docs/SECURITY.md): controles do MVP, aviso para
+  testadores, consentimento e orientações para IA/OCR futuros.
 
 ## Requisitos
 
@@ -158,15 +160,23 @@ Resposta esperada do health check:
 {"status":"ok"}
 ```
 
+## Segurança e privacidade
+
+O MVP valida extensões e assinaturas básicas de imagens, limita uploads a 5 MB,
+usa nomes internos aleatórios, mantém arquivos fora de acesso público direto e
+os serve somente por endpoint controlado. O banco, uploads e `.env` são dados
+locais ignorados pelo Git. Consulte [docs/SECURITY.md](docs/SECURITY.md) antes
+de usar dados de receitas familiares em testes.
+
 ## Testes
 
 ```bash
 pytest
 ```
 
-Os testes cobrem os dois caminhos de criação: o cadastro manual completo e a
-importação local com análise, preservação das fontes e revisão antes da
-confirmação.
+Os testes cobrem os três fluxos principais: cadastro manual completo,
+importação local com análise e revisão, e lista de compras. Também verificam os
+controles mínimos de upload e proteção dos dados locais.
 
 ## Limitações desta etapa
 

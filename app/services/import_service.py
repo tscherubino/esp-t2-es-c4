@@ -1,6 +1,7 @@
 """Caso de uso da importação assistida com providers exclusivamente locais."""
 
 import json
+import logging
 from typing import Optional
 
 from fastapi import UploadFile
@@ -18,7 +19,10 @@ from app.processors import (
 )
 from app.schemas.imports import ImportReviewInput, StructuredRecipe
 from app.services.recipe_service import RecipeInput, create_recipe
-from app.services.storage import save_image_bytes
+from app.services.storage import MAX_IMAGE_SIZE, delete_image, save_image_bytes
+
+
+logger = logging.getLogger(__name__)
 
 
 def build_ocr_provider():
@@ -56,7 +60,7 @@ class RecipeImportService:
 
         try:
             if image is not None and image.filename:
-                image_bytes = await image.read()
+                image_bytes = await image.read(MAX_IMAGE_SIZE + 1)
                 stored_filename, content_type, relative_path = save_image_bytes(
                     image_bytes, image.content_type
                 )
@@ -78,6 +82,15 @@ class RecipeImportService:
             db.commit()
             return job, structured, extracted_text
         except Exception as error:
+            if job.image_stored_filename:
+                delete_image(job.image_stored_filename)
+                job.image_stored_filename = None
+                job.image_relative_path = None
+            logger.warning(
+                "Falha na importação local: status=failed source_type=%s error_type=%s",
+                job.source_type,
+                type(error).__name__,
+            )
             job.status = "failed"
             job.error_message = str(error)
             db.commit()

@@ -149,6 +149,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -159,6 +161,8 @@ venv.bak/
 
 # Configuração e dados locais do Livro Vivo de Receitas
 data/*.db
+data/*.sqlite
+data/*.sqlite3
 uploads/*
 !uploads/.gitkeep
 

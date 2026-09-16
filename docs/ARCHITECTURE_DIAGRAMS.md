@@ -434,6 +434,28 @@ Os providers locais e a revisão humana estão implementados. As interfaces
 providers reais futuros, sem alterar o fluxo de revisão. Não existem APIs
 externas nem providers reais no MVP.
 
+## 10.1 Controles de upload e privacidade
+
+```mermaid
+flowchart LR
+    Upload[Upload de imagem]
+    Type[Whitelist de tipo]
+    Size[Limite de 5 MB]
+    Signature[Assinatura binária]
+    UUID[UUID + extensão segura]
+    Private[(uploads/ fora de acesso público)]
+    Endpoint[Endpoint controlado]
+    Delete[Exclusão junto da receita]
+
+    Upload --> Type --> Size --> Signature --> UUID --> Private
+    Private --> Endpoint
+    Private --> Delete
+```
+
+O fluxo rejeita tipos não permitidos, conteúdo incompatível e arquivos acima
+do limite antes da persistência. O banco e os uploads são locais e ignorados
+no Git; logs de falha não carregam texto, imagem ou história da receita.
+
 ## 11. Observações Arquiteturais
 
 ### Decisões identificadas
@@ -443,6 +465,8 @@ externas nem providers reais no MVP.
 - Texto original e imagem original são preservados.
 - Providers locais são substituíveis por interfaces, sem chaves externas.
 - SQLite e uploads permanecem locais.
+- Uploads são validados, armazenados com UUID e servidos por endpoint controlado.
+- Exclusão de receita remove a imagem local associada.
 - A aplicação continua um monólito modular com HTML server-side.
 
 ### Limitações atuais
@@ -451,6 +475,8 @@ externas nem providers reais no MVP.
 - a tela de revisão é parte do fluxo de importação e não substitui o cadastro
   manual;
 - a lista de compras não converte unidades nem tenta equivalências complexas;
+- a validação de assinatura é intencionalmente mínima e não substitui um
+  antivírus ou uma biblioteca completa de decodificação de imagens;
 - autenticação real e multiusuário continuam fora do MVP.
 
 ### Evoluções futuras
