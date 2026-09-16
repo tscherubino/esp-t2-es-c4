@@ -206,6 +206,11 @@ O limite de imagem é de 5 MB e os formatos aceitos são JPEG, PNG e WebP. Para
 testes com usuários reais, leia também o aviso e o termo de consentimento em
 `docs/SECURITY.md`.
 
+O cadastro manual valida e armazena a imagem antes de confirmar a receita; um
+upload inválido não deixa uma receita parcial. Ao excluir uma receita, a imagem
+e os jobs de importação associados são removidos, enquanto itens de listas de
+compras mantêm seu conteúdo e deixam de apontar para a receita excluída.
+
 ## Testes
 
 ```bash

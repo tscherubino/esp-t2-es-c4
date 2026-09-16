@@ -32,7 +32,11 @@ def clean_values(values: list[str]) -> list[str]:
 def _replace_children(db: Session, recipe: Recipe, data: RecipeInput) -> None:
     recipe.ingredients.clear()
     recipe.preparation_steps.clear()
+    old_recipe_tags = list(recipe.recipe_tags)
     recipe.recipe_tags.clear()
+    for recipe_tag in old_recipe_tags:
+        db.delete(recipe_tag)
+    db.flush()
 
     descriptions = clean_values(data.ingredient_descriptions)
     quantities = data.ingredient_quantities
@@ -62,7 +66,7 @@ def _replace_children(db: Session, recipe: Recipe, data: RecipeInput) -> None:
         db.add(recipe_tag)
 
 
-def create_recipe(db: Session, user: User, data: RecipeInput) -> Recipe:
+def create_recipe(db: Session, user: User, data: RecipeInput, *, commit: bool = True) -> Recipe:
     recipe = Recipe(
         user_id=user.id,
         title=data.title.strip(),
@@ -73,24 +77,34 @@ def create_recipe(db: Session, user: User, data: RecipeInput) -> Recipe:
     )
     _replace_children(db, recipe, data)
     db.add(recipe)
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     return recipe
 
 
-def update_recipe(db: Session, recipe: Recipe, data: RecipeInput) -> Recipe:
+def update_recipe(db: Session, recipe: Recipe, data: RecipeInput, *, commit: bool = True) -> Recipe:
     recipe.title = data.title.strip()
     recipe.servings = data.servings
     recipe.prep_time_minutes = data.prep_time_minutes
     recipe.original_text = data.original_text.strip() if data.original_text else None
     recipe.origin_story = data.origin_story.strip() if data.origin_story else None
     _replace_children(db, recipe, data)
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     return recipe
 
 
 def delete_recipe(db: Session, recipe: Recipe) -> None:
     for image in recipe.images:
         delete_image(image.stored_filename)
+    for import_job in list(recipe.import_jobs):
+        db.delete(import_job)
+    for shopping_item in list(recipe.shopping_list_items):
+        shopping_item.recipe_id = None
     db.delete(recipe)
     db.commit()
 

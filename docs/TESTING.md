@@ -36,7 +36,7 @@ Não há dependência de Docker, PostgreSQL, API externa, OCR real ou LLM real.
 |---|---|---|
 | Disponibilidade | `/` e `/health` respondem corretamente | `tests/test_app.py` |
 | Banco | tabelas do domínio são criadas | `tests/test_db.py` |
-| Cadastro manual | criar, consultar, editar e excluir receita | `tests/test_manual_flow.py` |
+| Cadastro manual | criar, consultar, editar e excluir receita | `tests/test_manual_flow.py`, `tests/test_critical_regressions.py` |
 | Upload válido | imagem permitida é salva com nome seguro | `tests/test_security.py` |
 | Upload inválido | tipo, assinatura e tamanho inválidos são rejeitados | `tests/test_security.py` |
 | Importação | texto/imagem são analisados e aguardam revisão | `tests/test_import.py` |
@@ -45,6 +45,7 @@ Não há dependência de Docker, PostgreSQL, API externa, OCR real ou LLM real.
 | Lista de compras | uma ou várias receitas geram itens consolidados | `tests/test_shopping.py` |
 | Itens | editar, marcar, remover, adicionar e copiar como texto | `tests/test_shopping.py` |
 | Segurança | exclusão não atravessa o diretório de uploads | `tests/test_security.py` |
+| Regressões P1 | upload inválido, limite, falha amigável e exclusão completa | `tests/test_critical_regressions.py` |
 
 ## Execução
 

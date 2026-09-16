@@ -13,7 +13,7 @@ from app.db.session import get_db
 from app.repositories.recipe_repository import get_demo_user, get_recipe, list_recipes
 from app.schemas.domain import RecipeManualInput
 from app.services.recipe_service import RecipeInput, create_recipe, delete_recipe, update_recipe
-from app.services.storage import save_image
+from app.services.storage import delete_image, save_image
 from app.models import RecipeImage
 
 
@@ -65,6 +65,7 @@ async def create_manual_recipe(
     image: UploadFile | None = None,
     db: Session = Depends(get_db),
 ):
+    stored_image: tuple[str, str, str] | None = None
     try:
         data = RecipeManualInput(
             title=title,
@@ -78,9 +79,16 @@ async def create_manual_recipe(
             step_instructions=step_instructions,
             tags=tags,
         )
-        recipe = create_recipe(db, get_demo_user(db), to_recipe_input(data))
         if image is not None and image.filename:
-            stored_filename, content_type, relative_path = await save_image(image)
+            stored_image = await save_image(image)
+        recipe = create_recipe(
+            db,
+            get_demo_user(db),
+            to_recipe_input(data),
+            commit=stored_image is None,
+        )
+        if stored_image is not None:
+            stored_filename, content_type, relative_path = stored_image
             recipe.images.append(
                 RecipeImage(
                     original_filename=image.filename,
@@ -93,6 +101,8 @@ async def create_manual_recipe(
         return RedirectResponse(f"/recipes/{recipe.public_id}", status_code=303)
     except (ValueError, Exception) as error:
         db.rollback()
+        if stored_image is not None:
+            delete_image(stored_image[0])
         if isinstance(error, ValueError):
             return templates.TemplateResponse(
                 request=request,
@@ -159,18 +169,34 @@ async def update_manual_recipe(
         step_instructions=step_instructions,
         tags=tags,
     )
-    update_recipe(db, recipe, to_recipe_input(data))
-    if image is not None and image.filename:
-        stored_filename, content_type, relative_path = await save_image(image)
-        recipe.images.append(
-            RecipeImage(
-                original_filename=image.filename,
-                stored_filename=stored_filename,
-                content_type=content_type,
-                relative_path=relative_path,
+    stored_image: tuple[str, str, str] | None = None
+    try:
+        if image is not None and image.filename:
+            stored_image = await save_image(image)
+        update_recipe(db, recipe, to_recipe_input(data), commit=stored_image is None)
+        if stored_image is not None:
+            stored_filename, content_type, relative_path = stored_image
+            recipe.images.append(
+                RecipeImage(
+                    original_filename=image.filename,
+                    stored_filename=stored_filename,
+                    content_type=content_type,
+                    relative_path=relative_path,
+                )
             )
-        )
-        db.commit()
+            db.commit()
+    except (ValueError, Exception) as error:
+        db.rollback()
+        if stored_image is not None:
+            delete_image(stored_image[0])
+        if isinstance(error, ValueError):
+            return templates.TemplateResponse(
+                request=request,
+                name="recipes/form.html",
+                context=recipe_context(request, recipe=recipe, error=str(error), mode="edit"),
+                status_code=400,
+            )
+        raise
     return RedirectResponse(f"/recipes/{recipe.public_id}", status_code=303)
 
 

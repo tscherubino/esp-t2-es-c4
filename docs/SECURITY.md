@@ -17,6 +17,8 @@ autenticação, hardening de servidor ou uma avaliação de produção.
 - Imagens ficam em `uploads/`, fora de uma pasta pública direta, e só são
   servidas pelo endpoint controlado da receita pertencente ao usuário demo.
 - A exclusão de uma receita remove suas imagens locais associadas.
+- A exclusão de uma receita remove seus jobs de importação associados e
+  desvincula itens de listas de compras sem apagar o conteúdo da lista.
 - O banco, uploads e arquivos `.env` são ignorados pelo Git.
 - Falhas de importação registram somente tipo de evento e tipo da exceção, sem
   texto original, nomes de família ou outros dados da receita.

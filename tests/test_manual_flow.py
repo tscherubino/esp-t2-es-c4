@@ -52,7 +52,7 @@ def test_manual_recipe_flow_end_to_end() -> None:
                 **create_data,
                 "title": "Bolo de teste editado",
                 "servings": "10",
-                "tags": ["festa"],
+                "tags": ["família"],
             },
             follow_redirects=False,
         )
