@@ -2,46 +2,40 @@
 
 ## 1. Objetivo
 
-Este documento registra visualmente a arquitetura efetivamente implementada do
-MVP local após os Prompts 01–04. Os diagramas complementam
-`docs/ARCHITECTURE.md` e servem como referência rápida para desenvolvimento,
-revisão técnica e evolução incremental.
+Documentar visualmente a arquitetura efetivamente implementada do MVP local
+após os Prompts 01–05. Este documento complementa
+`docs/ARCHITECTURE.md`, facilitando a compreensão das camadas, dos fluxos de
+receitas e do ponto de extensão da importação assistida.
 
 ## 2. Escopo atual
 
-O estado documentado inclui o scaffold FastAPI, a modelagem SQLAlchemy, o fluxo
-manual de receitas, o CRUD web, a preservação de imagens locais e os endpoints
-JSON iniciais. A execução é local com Python 3.14, SQLite em `data/app.db` e
-arquivos em `uploads/`.
+O projeto usa Python 3.14, FastAPI/Uvicorn, SQLite em `data/app.db`, SQLAlchemy,
+Pydantic v2, Jinja2, Tailwind CSS via CDN e armazenamento local em `uploads/`.
 
-IA real, OCR real, RAG, PostgreSQL, pgvector, Docker, storage externo,
-autenticação real e infraestrutura de produção continuam fora do escopo. A
-importação atual preserva texto/imagem e cria um `ImportJob` pendente, sem
-estruturação automática.
+Existem dois caminhos separados para criar receitas:
+
+- **Fluxo A — Cadastro manual:** persiste diretamente uma receita preenchida
+  pelo usuário.
+- **Fluxo B — Importação assistida:** extrai uma sugestão com providers locais,
+  apresenta uma tela de revisão e só então persiste a receita confirmada.
+
+Não há APIs externas, chaves de API, OCR real, IA real, RAG, PostgreSQL,
+pgvector, Docker, storage externo ou autenticação real.
 
 ## 3. Contexto da Solução
-
-O usuário acessa a aplicação pelo navegador. FastAPI/Uvicorn atende as
-requisições locais, SQLAlchemy persiste dados no SQLite e o storage local mantém
-as imagens originais.
 
 ```mermaid
 flowchart LR
     User[Usuário] --> Browser[Navegador Web]
     Browser <-->|HTTP local| App[Livro Vivo de Receitas\nFastAPI + Uvicorn]
     App -->|SQLAlchemy| DB[(SQLite\ndata/app.db)]
-    App -->|imagens originais| Files[(Filesystem\nuploads/)]
+    App -->|imagem original| Files[(Filesystem local\nuploads/)]
 ```
 
-Não há APIs de terceiros ou serviços de nuvem participando da arquitetura atual.
+O navegador interage somente com a aplicação local. O banco e os arquivos são
+recursos locais do MVP.
 
 ## 4. Arquitetura Lógica
-
-As rotas recebem requisições, validam formulários com Pydantic, delegam casos de
-uso aos services e usam repositories/modelos para consultar e persistir dados.
-Templates Jinja2 retornam HTML; o endpoint JSON oferece uma base para futuras
-interfaces. HTMX está previsto na arquitetura, mas ainda não participa dos
-fluxos atuais.
 
 ```mermaid
 flowchart TB
@@ -51,35 +45,43 @@ flowchart TB
     subgraph Presentation[Apresentação]
         Routers[Routers\nrecipes.py / imports.py]
         Templates[Jinja2\nTemplates HTML]
-        HTMX[HTMX\nplanejado; não utilizado]
+        HTMX[HTMX\nprevisto; não usado atualmente]
     end
 
     subgraph Application[Aplicação]
-        Services[Services\nrecipe_service.py / import_service.py]
-        Storage[Storage service\nvalidação de imagens]
+        RecipeService[recipe_service.py]
+        ImportService[import_service.py]
+        Storage[storage.py]
+        Providers[processors\nproviders locais]
     end
 
-    subgraph DomainData[Domínio e dados]
-        Schemas[Schemas\nPydantic v2]
-        Models[Models\nSQLAlchemy]
-        Repositories[Repositories\nrecipe_repository.py]
+    subgraph Data[Dados]
+        Schemas[Pydantic v2]
+        Models[SQLAlchemy models]
+        Repository[recipe_repository.py]
+        SQLite[(SQLite\ndata/app.db)]
+        Uploads[(uploads/)]
     end
-
-    SQLite[(SQLite\ndata/app.db)]
-    Uploads[(Filesystem\nuploads/)]
 
     Browser --> FastAPI --> Routers
     Routers --> Schemas
-    Routers --> Services
     Routers --> Templates
+    Routers --> RecipeService
+    Routers --> ImportService
     Routers -.-> HTMX
-    Services --> Repositories
-    Services --> Models
-    Services --> Storage
-    Repositories --> Models
+    RecipeService --> Repository
+    RecipeService --> Models
+    RecipeService --> Storage
+    ImportService --> Providers
+    ImportService --> Models
+    ImportService --> Storage
+    Repository --> Models
     Models --> SQLite
     Storage --> Uploads
 ```
+
+O Fluxo A usa `RecipeService`; o Fluxo B usa `RecipeImportService` e providers
+locais antes de chegar à persistência definitiva.
 
 ## 5. Componentes e Módulos
 
@@ -87,62 +89,66 @@ flowchart TB
 flowchart TB
     subgraph Presentation[Presentation]
         Main[app/main.py]
-        RecipeRouter[app/routers/recipes.py]
-        ImportRouter[app/routers/imports.py]
-        WebTemplates[app/templates/\nbase, index, recipes]
+        RecipesRouter[app/routers/recipes.py]
+        ImportsRouter[app/routers/imports.py]
+        TemplatesDir[app/templates/\nbase, index, recipes]
     end
 
     subgraph Application[Application]
-        RecipeService[app/services/recipe_service.py]
-        ImportService[app/services/import_service.py]
-        StorageService[app/services/storage.py]
+        RecipeSvc[app/services/recipe_service.py]
+        ImportSvc[app/services/import_service.py\nRecipeImportService]
+        StorageSvc[app/services/storage.py]
     end
 
-    subgraph Domain[Domain / Data]
+    subgraph Processing[Importação local]
+        OCRInterface[OCRProvider]
+        MockOCR[MockOCRProvider]
+        ManualOCR[ManualTranscriptionOCRProvider]
+        ParserInterface[LLMRecipeParser]
+        MockParser[MockLLMRecipeParser]
+        RuleParser[RuleBasedRecipeParser]
+        Structured[schemas/import.py\nsaída estruturada]
+    end
+
+    subgraph Data[Data]
         DomainSchemas[app/schemas/domain.py]
         Entities[app/models/entities.py]
-        RecipeRepository[app/repositories/recipe_repository.py]
-    end
-
-    subgraph Infrastructure[Infrastructure]
-        Config[app/core/config.py]
+        Repo[app/repositories/recipe_repository.py]
         Session[app/db/session.py]
-        Base[app/db/base.py]
         DB[(data/app.db)]
         Uploads[(uploads/)]
     end
 
-    Main --> RecipeRouter
-    Main --> ImportRouter
-    Main --> Config
+    Main --> RecipesRouter
+    Main --> ImportsRouter
     Main --> Session
-    RecipeRouter --> DomainSchemas
-    RecipeRouter --> RecipeService
-    RecipeRouter --> RecipeRepository
-    RecipeRouter --> WebTemplates
-    ImportRouter --> ImportService
-    ImportRouter --> RecipeRepository
-    ImportRouter --> WebTemplates
-    RecipeService --> Entities
-    RecipeService --> RecipeRepository
-    RecipeService --> StorageService
-    ImportService --> Entities
-    ImportService --> StorageService
-    RecipeRepository --> Entities
-    StorageService --> Uploads
-    Session --> Base
+    RecipesRouter --> DomainSchemas
+    RecipesRouter --> RecipeSvc
+    RecipesRouter --> TemplatesDir
+    ImportsRouter --> ImportSvc
+    ImportsRouter --> TemplatesDir
+    RecipeSvc --> Repo
+    RecipeSvc --> Entities
+    RecipeSvc --> StorageSvc
+    ImportSvc --> OCRInterface
+    ImportSvc --> ParserInterface
+    ImportSvc --> Structured
+    ImportSvc --> Entities
+    OCRInterface -.-> MockOCR
+    OCRInterface -.-> ManualOCR
+    ParserInterface -.-> MockParser
+    ParserInterface -.-> RuleParser
+    Repo --> Entities
     Session --> Entities
     Session --> DB
+    StorageSvc --> Uploads
 ```
 
-Os testes em `tests/` cobrem endpoints básicos, criação do banco e o fluxo
-manual ponta a ponta. `app/static/` existe para estáticos locais mínimos; o
-estilo atual usa Tailwind CSS via CDN.
+Os providers exibidos são implementações locais e substituíveis; não há
+integração externa. Os nomes `schemas/import.py` e `processors/` representam a
+organização desta etapa e deverão corresponder aos módulos criados no código.
 
 ## 6. Modelo de Dados
-
-As entidades abaixo são as implementadas em `app/models/entities.py`. Os IDs
-inteiros são internos e cada entidade possui `public_id` textual UUID.
 
 ```mermaid
 erDiagram
@@ -244,9 +250,8 @@ erDiagram
     RECIPE o|--o{ IMPORT_JOB : results_in
 ```
 
-`recipe_id` é opcional em `ShoppingListItem` e `ImportJob`; por isso esses dois
-relacionamentos são representados como opcionais. As tabelas de lista de
-compras existem no modelo, mas ainda não possuem páginas ou services próprios.
+O modelo preserva `original_text`, `origin_story` e os metadados da imagem
+original. O `ImportJob` registra o ciclo de importação e seu status.
 
 ## 7. Fluxo de Cadastro Manual
 
@@ -257,51 +262,43 @@ sequenceDiagram
     participant App as FastAPI/Uvicorn
     participant Router as recipes.py
     participant Schema as RecipeManualInput
-    participant Service as recipe_service.py
+    participant Service as RecipeService
     participant Storage as storage.py
     participant ORM as SQLAlchemy
     participant DB as SQLite
-    participant Files as uploads/
 
     User->>Browser: Acessa /recipes/new
     Browser->>App: GET /recipes/new
     App->>Router: encaminha requisição
-    Router-->>Browser: Jinja2 renderiza formulário
-    User->>Browser: Preenche receita e imagem opcional
-    Browser->>App: POST /recipes multipart/form-data
-    App->>Router: recebe formulário
-    Router->>Schema: valida dados e listas
-    Schema-->>Router: entrada válida
+    Router-->>Browser: renderiza formulário Jinja2
+    User->>Browser: preenche e envia formulário
+    Browser->>App: POST /recipes
+    App->>Router: recebe multipart/form-data
+    Router->>Schema: valida campos
+    Schema-->>Router: dados válidos
     Router->>Service: create_recipe(...)
-    Service->>ORM: cria Recipe e dados relacionados
+    Service->>ORM: cria receita e relacionados
     ORM->>DB: INSERT / COMMIT
     opt imagem enviada
         Router->>Storage: save_image(upload)
-        Storage->>Files: grava nome UUID seguro
-        Router->>ORM: associa RecipeImage
-        ORM->>DB: INSERT / COMMIT
+        Storage->>DB: registra RecipeImage via ORM
     end
     Router-->>Browser: redirect 303 para detalhe
-    Browser->>App: GET /recipes/{public_id}
-    App->>Router: consulta receita
-    Router->>ORM: carrega relacionamentos
-    ORM->>DB: SELECT
-    Router-->>Browser: Jinja2 renderiza detalhe
 ```
 
-O texto original, a história/origem e a imagem original permanecem separados
-dos dados editáveis estruturados. A imagem é acessada por endpoint controlado.
+Este fluxo não passa por providers de importação e permanece independente do
+Fluxo B.
 
 ## 8. Ciclo CRUD de Receitas
 
 ```mermaid
 flowchart LR
     UI[Templates Jinja2]
-    Create[POST /recipes\ncriar]
-    List[GET /recipes\nlistar]
-    Read[GET /recipes/{id}\nconsultar]
-    Update[POST /recipes/{id}/edit\neditar]
-    Delete[POST /recipes/{id}/delete\nexcluir]
+    Create[criar]
+    List[listar]
+    Read[consultar]
+    Update[editar]
+    Delete[excluir]
     Router[recipes.py]
     Service[recipe_service.py]
     Repository[recipe_repository.py]
@@ -325,12 +322,8 @@ flowchart LR
     Create -.->|imagem opcional| Files
     Update -.->|imagem opcional| Files
     Read -.->|endpoint controlado| Files
-    Delete -.->|remove imagem associada| Files
+    Delete -.->|remove arquivo| Files
 ```
-
-Também existem os endpoints JSON `GET /api/recipes` e
-`GET /api/recipes/{public_id}`. O fluxo de lista de compras ainda não foi
-implementado como funcionalidade web.
 
 ## 9. Arquitetura de Execução Local
 
@@ -339,16 +332,16 @@ flowchart TB
     subgraph Local[Ambiente Local do MVP]
         Python[Python 3.14]
         Venv[.venv]
-        Dependencies[requirements.txt]
+        Requirements[requirements.txt]
         Uvicorn[uvicorn app.main:app --reload]
-        FastAPI[FastAPI\napp.main]
-        SQLite[(SQLite\ndata/app.db)]
+        FastAPI[FastAPI]
+        SQLite[(data/app.db)]
         Uploads[(uploads/)]
         Templates[Templates Jinja2]
-        Static[Arquivos estáticos]
+        Static[app/static/]
 
         Python --> Venv
-        Venv --> Dependencies
+        Venv --> Requirements
         Venv --> Uvicorn
         Uvicorn --> FastAPI
         FastAPI --> SQLite
@@ -357,71 +350,68 @@ flowchart TB
         FastAPI --> Static
     end
 
-    Browser[Navegador\nlocalhost / 127.0.0.1:8000]
+    Browser[Navegador\n127.0.0.1:8000]
     Browser -->|HTTP local| Uvicorn
 ```
 
-Esta visão representa apenas execução local, não produção. Tailwind CSS é
-carregado via CDN no navegador, conforme a decisão do MVP, mas não existe
-serviço externo obrigatório para a aplicação, o banco ou o armazenamento local.
+Esta é uma arquitetura local, não de produção. Tailwind CSS é carregado pelo
+navegador via CDN, sem tornar serviços externos dependência da aplicação.
 
 ## 10. Ponto de Extensão para Importação Assistida
 
-Os componentes tracejados são planejados para o próximo ciclo. Atualmente,
-`app/services/import_service.py` apenas preserva texto/imagem e cria
-`ImportJob(status="pending")`.
-
 ```mermaid
 flowchart LR
-    Current[imports.py\nrota atual] --> ImportService[import_service.py\nimplementado: preservação]
-    ImportService -.-> Planned[RecipeImportService\nPLANEJADO — ainda não implementado]
-    Planned -.-> OCR[OCRProvider\nPLANEJADO]
-    Planned -.-> LLM[LLMRecipeParser\nPLANEJADO]
-    Planned -.-> Mocks[implementations mock\nPLANEJADO]
-    Planned -.-> Review[revisão humana\nfluxo futuro]
-    ImportService --> Sources[(texto original\n+ uploads/)]
+    ImportRoute[imports.py]
+    ImportService[RecipeImportService]
+    OCR[OCRProvider]
+    Parser[LLMRecipeParser]
+    MockOCR[MockOCRProvider]
+    ManualOCR[ManualTranscriptionOCRProvider]
+    MockLLM[MockLLMRecipeParser]
+    RuleParser[RuleBasedRecipeParser]
+    Review[Tela de revisão]
+    Persist[RecipeService\npersistência após confirmação]
+
+    ImportRoute --> ImportService
+    ImportService -.-> OCR
+    ImportService -.-> Parser
+    OCR -.-> MockOCR
+    OCR -.-> ManualOCR
+    Parser -.-> MockLLM
+    Parser -.-> RuleParser
+    ImportService --> Review
+    Review -->|usuário confirma/edita| Persist
+
+    classDef planned stroke-dasharray: 5 5;
+    class OCR,Parser,MockOCR,ManualOCR,MockLLM,RuleParser,Review planned;
 ```
 
-Nenhum provider real, chave externa, LLM ou OCR está representado como parte da
-arquitetura atual.
+Os componentes tracejados relacionados a providers e revisão representam o
+fluxo planejado desta etapa. Não existem APIs externas nem providers reais.
 
 ## 11. Observações Arquiteturais
 
 ### Decisões identificadas
 
-- monólito modular local, adequado ao MVP;
-- renderização server-side com Jinja2;
-- SQLite em `data/app.db` e filesystem em `uploads/`;
-- usuário demo, sem autenticação real;
-- nomes internos UUID para imagens e validação de tipo/tamanho;
-- separação entre routers, services, repositories, schemas e modelos;
-- dados originais preservados separadamente dos dados estruturados.
-
-### Inconsistências encontradas
-
-- `docs/ARCHITECTURE.md` sugere `app/config.py`, mas o código usa
-  `app/core/config.py`;
-- o documento usa `InstructionStep`, enquanto o modelo real usa
-  `PreparationStep`;
-- `docs/ARCHITECTURE.md` foi originalmente escrito antes da implementação e
-  ainda descreve algumas capacidades como futuras;
-- HTMX está na stack aprovada, mas ainda não é utilizado nos templates atuais;
-- modelos de lista de compras existem, porém não há fluxo web correspondente;
-- não existe ainda o pacote `processors/` previsto para providers de IA/OCR.
+- Fluxo A e Fluxo B são caminhos separados para criação de receitas.
+- A importação nunca persiste definitivamente sem revisão humana.
+- Texto original e imagem original são preservados.
+- Providers locais são substituíveis por interfaces, sem chaves externas.
+- SQLite e uploads permanecem locais.
+- A aplicação continua um monólito modular com HTML server-side.
 
 ### Limitações atuais
 
-- importação não estrutura automaticamente texto ou imagem;
-- não há IA/OCR real;
-- não há CRUD de lista de compras;
-- não há autenticação ou multiusuário real;
-- inicialização de banco usa `create_all` e ajuste local simples, sem Alembic;
-- Tailwind depende do CDN para carregar estilos no navegador.
+- providers são mocks ou regras locais, não OCR/IA reais;
+- a tela de revisão é parte do fluxo de importação e não substitui o cadastro
+  manual;
+- listas de compras possuem modelo, mas não fluxo web nesta etapa;
+- autenticação real e multiusuário continuam fora do MVP.
 
-### Pontos de evolução
+### Evoluções futuras
 
-1. executar o Prompt 05 com providers mockados de importação;
-2. manter a preservação e a revisão humana das fontes originais;
-3. adicionar lista de compras em ciclo próprio;
-4. revisar `docs/ARCHITECTURE.md` para alinhar nomes e estado implementado;
-5. somente depois avaliar OCR/IA reais, autenticação e demais evoluções.
+- adicionar providers reais somente atrás das interfaces existentes e por
+  configuração de ambiente;
+- avaliar OCR/LLM externos sem alterar a revisão humana;
+- revisar `docs/ARCHITECTURE.md` para alinhar nomes e estado atual;
+- implementar os próximos prompts somente após validação deste fluxo.
