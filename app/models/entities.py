@@ -171,6 +171,12 @@ class ImportJob(PublicIdMixin, TimestampMixin, Base):
     source_type: Mapped[str] = mapped_column(String(30), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending", index=True)
     original_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    extracted_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    image_original_filename: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    image_stored_filename: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    image_content_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    image_relative_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    structured_payload: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="import_jobs")

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     app_name: str = "Livro Vivo de Receitas"
     database_url: str = f"sqlite:///{(PROJECT_ROOT / 'data' / 'app.db').as_posix()}"
     uploads_dir: Path = PROJECT_ROOT / "uploads"
+    import_ocr_provider: str = "mock"
+    import_parser: str = "rule_based"
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",

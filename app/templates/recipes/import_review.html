@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Revisar importação — {{ app_name }}{% endblock %}
+
+{% block content %}
+  <a class="text-sm text-amber-700" href="/recipes/import">← Nova importação</a>
+  <h1 class="mt-2 text-3xl font-bold">Revisar importação</h1>
+  <p class="mt-3 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">Revise e edite as sugestões. A receita só será salva definitivamente depois da sua confirmação.</p>
+  {% if error %}<div class="mt-4 rounded-lg bg-red-50 p-4 text-red-800">{{ error }}</div>{% endif %}
+  <form class="mt-6 space-y-6" method="post">
+    <section class="rounded-xl bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-xl font-semibold">Dados extraídos</h2>
+      <label class="block">Título *<input required class="mt-1 w-full rounded-lg border p-2" name="title" value="{{ structured.title }}"></label>
+      <div class="mt-4 grid gap-4 md:grid-cols-2"><label>Porções<input class="mt-1 w-full rounded-lg border p-2" min="1" name="servings" type="number" value="{{ structured.servings or '' }}"></label><label>Tempo (minutos)<input class="mt-1 w-full rounded-lg border p-2" min="0" name="prep_time_minutes" type="number" value="{{ structured.prep_time_minutes or '' }}"></label></div>
+      <label class="mt-4 block">História/origem<textarea class="mt-1 min-h-24 w-full rounded-lg border p-2" name="origin_story"></textarea></label>
+    </section>
+    <section class="rounded-xl bg-white p-6 shadow-sm"><h2 class="mb-4 text-xl font-semibold">Ingredientes</h2>{% for i in range(5) %}{% set item = structured.ingredients[i] if i < structured.ingredients|length else none %}<div class="mb-2 grid gap-2 md:grid-cols-12"><input class="rounded-lg border p-2 md:col-span-6" name="ingredient_names" placeholder="Ingrediente" value="{{ item.name if item else '' }}"><input class="rounded-lg border p-2 md:col-span-3" name="ingredient_quantities" placeholder="Quantidade" value="{{ item.quantity if item and item.quantity else '' }}"><input class="rounded-lg border p-2 md:col-span-3" name="ingredient_units" placeholder="Unidade" value="{{ item.unit if item and item.unit else '' }}"></div>{% endfor %}</section>
+    <section class="rounded-xl bg-white p-6 shadow-sm"><h2 class="mb-4 text-xl font-semibold">Modo de preparo</h2>{% for i in range(5) %}{% set item = structured.preparation_steps[i] if i < structured.preparation_steps|length else none %}<label class="mb-3 block">Etapa {{ i + 1 }}<textarea class="mt-1 min-h-16 w-full rounded-lg border p-2" name="preparation_steps">{{ item.description if item else '' }}</textarea></label>{% endfor %}</section>
+    <section class="rounded-xl bg-white p-6 shadow-sm"><h2 class="mb-4 text-xl font-semibold">Tags e fonte</h2><label class="block">Tags{% for tag in structured.suggested_tags %}<input class="mt-1 w-full rounded-lg border p-2" name="tags" value="{{ tag }}">{% endfor %}<input class="mt-1 w-full rounded-lg border p-2" name="tags" placeholder="ex.: família, sobremesa"></label><p class="mt-4 text-sm text-stone-600">Fonte original preservada: {{ job.source_type }}{% if job.image_original_filename %} — {{ job.image_original_filename }}{% endif %}</p><details class="mt-3"><summary class="cursor-pointer font-medium">Ver texto original</summary><pre class="mt-2 whitespace-pre-wrap rounded-lg bg-stone-50 p-3 text-sm">{{ job.original_text or job.extracted_text }}</pre></details></section>
+    <button class="rounded-lg bg-amber-700 px-5 py-3 font-semibold text-white" type="submit">Confirmar e salvar receita</button>
+  </form>
+{% endblock %}

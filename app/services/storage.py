@@ -19,13 +19,21 @@ async def save_image(upload: UploadFile) -> tuple[str, str, str]:
         raise ValueError("Envie uma imagem JPEG, PNG ou WebP.")
 
     content = await upload.read(MAX_IMAGE_SIZE + 1)
+    return save_image_bytes(content, upload.content_type)
+
+
+def save_image_bytes(content: bytes, content_type: str | None) -> tuple[str, str, str]:
+    """Salva bytes de imagem já lidos, usando o mesmo limite e whitelist."""
+
+    if content_type not in ALLOWED_CONTENT_TYPES:
+        raise ValueError("Envie uma imagem JPEG, PNG ou WebP.")
     if len(content) > MAX_IMAGE_SIZE:
         raise ValueError("A imagem deve ter no máximo 5 MB.")
 
-    stored_filename = f"{uuid4()}{ALLOWED_CONTENT_TYPES[upload.content_type]}"
+    stored_filename = f"{uuid4()}{ALLOWED_CONTENT_TYPES[content_type]}"
     target = settings.uploads_dir / stored_filename
     target.write_bytes(content)
-    return stored_filename, upload.content_type, f"uploads/{stored_filename}"
+    return stored_filename, content_type, f"uploads/{stored_filename}"
 
 
 def delete_image(stored_filename: str) -> None:

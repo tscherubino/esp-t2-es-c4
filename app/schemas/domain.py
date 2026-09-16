@@ -207,4 +207,6 @@ class ImportJobRead(TimestampSchema):
     source_type: str
     status: str
     original_text: Optional[str]
+    extracted_text: Optional[str]
+    structured_payload: Optional[str]
     error_message: Optional[str]

@@ -69,6 +69,28 @@ def test_manual_recipe_flow_end_to_end() -> None:
             follow_redirects=False,
         )
         assert imported.status_code == 303
-        imported_id = imported.headers["location"].rsplit("/", 1)[-1]
-        assert "Receita importada pendente" in client.get(f"/recipes/{imported_id}").text
+        review_url = imported.headers["location"]
+        assert review_url.startswith("/recipes/import/")
+        review = client.get(review_url)
+        assert review.status_code == 200
+        assert "Revisar importação" in review.text
+        job_id = review_url.split("/")[3]
+        finalized = client.post(
+            f"/recipes/import/{job_id}/review",
+            data={
+                "title": "Receita importada revisada",
+                "servings": "4",
+                "prep_time_minutes": "30",
+                "origin_story": "Importada e revisada",
+                "ingredient_names": ["arroz"],
+                "ingredient_quantities": ["1"],
+                "ingredient_units": ["xícara"],
+                "preparation_steps": ["Cozinhe"],
+                "tags": ["importada"],
+            },
+            follow_redirects=False,
+        )
+        assert finalized.status_code == 303
+        imported_id = finalized.headers["location"].rsplit("/", 1)[-1]
+        assert "Receita importada revisada" in client.get(f"/recipes/{imported_id}").text
         assert client.post(f"/recipes/{imported_id}/delete", follow_redirects=False).status_code == 303

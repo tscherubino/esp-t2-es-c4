@@ -9,7 +9,7 @@ ingredientes, preparo, tags, história/origem e imagem opcional.
 - [Arquitetura aprovada](docs/ARCHITECTURE.md): decisões, camadas, modelo de
   domínio e backlog técnico.
 - [Diagramas arquiteturais](docs/ARCHITECTURE_DIAGRAMS.md): visões Mermaid do
-  estado implementado após o Prompt 4 e do ponto de extensão planejado para a
+  estado implementado após o Prompt 5 e do ponto de extensão planejado para a
   importação assistida.
 
 ## Requisitos
@@ -87,8 +87,35 @@ Abra <http://127.0.0.1:8000/> no navegador.
 5. Use **Editar** ou **Excluir** na página da receita.
 
 Também estão disponíveis `/api/recipes` e `/api/recipes/{public_id}` como
-endpoints JSON iniciais. A rota `/recipes/import` preserva texto e imagem e
-cria uma importação pendente; IA e OCR ainda não são executados.
+endpoints JSON iniciais.
+
+## Importação assistida
+
+O Fluxo B é separado do cadastro manual (Fluxo A):
+
+1. Acesse <http://127.0.0.1:8000/recipes/import>.
+2. Envie texto, imagem/print ou uma transcrição manual da imagem.
+3. A aplicação preserva as fontes, executa a análise local e abre uma tela de
+   revisão antes de criar a receita.
+4. Revise e edite título, porções, tempo, ingredientes, preparo, tags e origem.
+5. Confirme para criar a receita definitivamente.
+
+O Fluxo A continua disponível em `/recipes/new` e grava a receita diretamente
+após o envio do formulário. No Fluxo B, o envio cria apenas uma análise
+temporária (`ImportJob`); nenhuma receita definitiva é criada antes da
+confirmação na tela de revisão. Para imagens sem OCR real, informe a
+transcrição manual no campo indicado antes de analisar.
+
+Os providers são locais e substituíveis: `MockOCRProvider`,
+`ManualTranscriptionOCRProvider`, `MockLLMRecipeParser` e
+`RuleBasedRecipeParser`. O padrão usa `RuleBasedRecipeParser` e
+`MockOCRProvider`; podem ser selecionados por `IMPORT_PARSER` e
+`IMPORT_OCR_PROVIDER`. Nenhuma API externa, chave ou OCR real é necessária.
+
+Para análise estruturada via API, use `POST /api/recipes/import/analyze` com
+`multipart/form-data`. A resposta contém o `ImportJob`, o texto analisado, os
+campos estruturados, avisos e os `confidence_score`s. A receita não é salva
+definitivamente até a revisão humana.
 
 ## Verificação
 
@@ -116,9 +143,13 @@ Resposta esperada do health check:
 pytest
 ```
 
+Os testes cobrem os dois caminhos de criação: o cadastro manual completo e a
+importação local com análise, preservação das fontes e revisão antes da
+confirmação.
+
 ## Limitações desta etapa
 
-- a importação ainda não estrutura automaticamente o conteúdo;
+- a importação usa somente providers locais mockados ou baseados em regras;
 - não há OCR ou IA real;
 - não há autenticação real;
 - não há lista de compras;
