@@ -28,11 +28,18 @@ ingredientes, preparo, tags, história/origem e imagem opcional.
 
 ```powershell
 py -3.14 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
+.venv\Scripts\activate
 pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
+
+Se a política do PowerShell impedir a ativação, use a alternativa equivalente:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Ativação principal no Windows: `.venv\Scripts\activate`.
 
 ### Linux/macOS
 
@@ -44,9 +51,19 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-O arquivo `.env` é opcional. Sem ele, a aplicação usa SQLite em
-`data/app.db` e uploads em `uploads/`. Os valores podem ser alterados por
-variáveis de ambiente, especialmente `DATABASE_URL` para uma evolução futura.
+O arquivo `.env` é opcional. Não há variáveis obrigatórias: sem ele, a
+aplicação usa SQLite em `data/app.db`, uploads em `uploads/` e providers locais
+mockados. As opções disponíveis são:
+
+| Variável | Obrigatória | Padrão | Uso |
+|---|---:|---|---|
+| `APP_NAME` | não | `Livro Vivo de Receitas` | nome exibido na aplicação |
+| `DATABASE_URL` | não | SQLite em `data/app.db` | conexão futura compatível com outra base |
+| `UPLOADS_DIR` | não | `uploads/` | diretório local das imagens |
+| `IMPORT_OCR_PROVIDER` | não | `mock` | `mock` ou `manual` |
+| `IMPORT_PARSER` | não | `rule_based` | `rule_based` ou `mock_llm` |
+
+Nenhuma variável exige chave, conta ou serviço externo.
 
 ## Banco de dados
 
@@ -67,6 +84,18 @@ rm data/app.db
 Na próxima execução, o SQLite será recriado com as tabelas declaradas pelos
 modelos atuais.
 
+Para limpar as imagens locais de teste no Windows, com a aplicação parada:
+
+```powershell
+Get-ChildItem uploads -File | Remove-Item
+```
+
+No Linux/macOS:
+
+```bash
+find uploads -type f ! -name .gitkeep -delete
+```
+
 O modelo inicial contém as tabelas `users`, `recipes`, `recipe_images`,
 `ingredients`, `preparation_steps`, `tags`, `recipe_tags`, `shopping_lists`,
 `shopping_list_items` e `import_jobs`.
@@ -80,6 +109,9 @@ uvicorn app.main:app --reload
 ```
 
 Abra <http://127.0.0.1:8000/> no navegador.
+
+Para encerrar o servidor, pressione `Ctrl+C` no terminal. A aplicação cria o
+banco e os diretórios locais necessários na inicialização.
 
 ### Navegação da interface
 
@@ -170,6 +202,10 @@ os serve somente por endpoint controlado. O banco, uploads e `.env` são dados
 locais ignorados pelo Git. Consulte [docs/SECURITY.md](docs/SECURITY.md) antes
 de usar dados de receitas familiares em testes.
 
+O limite de imagem é de 5 MB e os formatos aceitos são JPEG, PNG e WebP. Para
+testes com usuários reais, leia também o aviso e o termo de consentimento em
+`docs/SECURITY.md`.
+
 ## Testes
 
 ```bash
@@ -183,6 +219,28 @@ controles mínimos de upload e proteção dos dados locais.
 Durante a execução, `tests/conftest.py` usa SQLite e uploads temporários; o
 arquivo `data/app.db` e o conteúdo de `uploads/` do ambiente local não são
 alterados pela suíte.
+
+## Provedores e evolução futura
+
+O MVP inicia com `MockOCRProvider`, `ManualTranscriptionOCRProvider`,
+`RuleBasedRecipeParser` e `MockLLMRecipeParser`, sem conexão externa. OCR ou IA
+reais não são ativados apenas por configuração nesta etapa: no futuro, deverão
+ser implementados atrás das interfaces existentes, com consentimento explícito,
+revisão humana obrigatória e sem usar dados reais de teste para treinamento sem
+autorização.
+
+## Checklist antes de demonstrar o MVP
+
+- [ ] confirmar `py -3.14 --version` e Python 3.14 ativo;
+- [ ] ativar `.venv` e instalar `requirements.txt`;
+- [ ] copiar `.env.example` para `.env` somente se precisar de configuração;
+- [ ] executar `pytest` com resultado aprovado;
+- [ ] iniciar `uvicorn app.main:app --reload`;
+- [ ] validar `/health`;
+- [ ] testar cadastro manual e importação com revisão;
+- [ ] testar geração e edição de lista de compras;
+- [ ] não inserir dados de terceiros sem autorização;
+- [ ] não versionar `.env`, `data/app.db` ou conteúdo de `uploads/`.
 
 ## Limitações desta etapa
 
