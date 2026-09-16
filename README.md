@@ -37,6 +37,29 @@ O arquivo `.env` é opcional. Sem ele, a aplicação usa SQLite em
 `data/app.db` e uploads em `uploads/`. Os valores podem ser alterados por
 variáveis de ambiente, especialmente `DATABASE_URL` para uma evolução futura.
 
+## Banco de dados
+
+As tabelas do modelo inicial são criadas automaticamente na inicialização da
+aplicação. Esta etapa ainda não usa Alembic. Para resetar o banco durante o
+desenvolvimento, pare a aplicação e remova somente o arquivo local:
+
+```powershell
+Remove-Item data/app.db
+```
+
+No Linux/macOS:
+
+```bash
+rm data/app.db
+```
+
+Na próxima execução, o SQLite será recriado com as tabelas declaradas pelos
+modelos atuais.
+
+O modelo inicial contém as tabelas `users`, `recipes`, `recipe_images`,
+`ingredients`, `preparation_steps`, `tags`, `recipe_tags`, `shopping_lists`,
+`shopping_list_items` e `import_jobs`.
+
 ## Execução
 
 Com o ambiente virtual ativado:
@@ -75,7 +98,7 @@ pytest
 
 ## Limitações desta etapa
 
-- não há modelos ou persistência de receitas;
+- não há páginas CRUD ou serviços de receitas;
 - não há importação, OCR ou IA;
 - não há autenticação real;
 - não há lista de compras;

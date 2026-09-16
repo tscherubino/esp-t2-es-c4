@@ -1,11 +1,13 @@
 """Ponto de entrada da aplicação FastAPI."""
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 
 from app.core.config import settings
+from app.db.session import initialize_database
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -14,7 +16,16 @@ templates = Jinja2Templates(directory=APP_DIR / "templates")
 settings.uploads_dir.mkdir(parents=True, exist_ok=True)
 (settings.uploads_dir.parent / "data").mkdir(parents=True, exist_ok=True)
 
-app = FastAPI(title=settings.app_name)
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Inicializa a estrutura do banco antes de atender requisições."""
+
+    initialize_database()
+    yield
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
 
 @app.get("/", include_in_schema=False)
