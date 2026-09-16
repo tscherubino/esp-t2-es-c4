@@ -170,12 +170,15 @@ async def update_manual_recipe(
         tags=tags,
     )
     stored_image: tuple[str, str, str] | None = None
+    old_images = list(recipe.images) if image is not None and image.filename else []
     try:
         if image is not None and image.filename:
             stored_image = await save_image(image)
         update_recipe(db, recipe, to_recipe_input(data), commit=stored_image is None)
         if stored_image is not None:
             stored_filename, content_type, relative_path = stored_image
+            for old_image in old_images:
+                db.delete(old_image)
             recipe.images.append(
                 RecipeImage(
                     original_filename=image.filename,
@@ -185,6 +188,8 @@ async def update_manual_recipe(
                 )
             )
             db.commit()
+            for old_image in old_images:
+                delete_image(old_image.stored_filename)
     except (ValueError, Exception) as error:
         db.rollback()
         if stored_image is not None:

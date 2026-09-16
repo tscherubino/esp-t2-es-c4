@@ -47,6 +47,47 @@ def test_import_without_source_returns_friendly_error() -> None:
     assert "Informe um texto ou selecione uma imagem" in response.text
 
 
+def test_edit_recipe_replaces_selected_image(tmp_path, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "uploads_dir", tmp_path)
+    with TestClient(app) as client:
+        created = client.post(
+            "/recipes",
+            data={"title": "Receita com imagem substituível"},
+            files={"image": ("antiga.png", io.BytesIO(PNG_BYTES), "image/png")},
+            follow_redirects=False,
+        )
+        public_id = created.headers["location"].rsplit("/", 1)[-1]
+        with SessionLocal() as db:
+            recipe = db.scalar(select(Recipe).where(Recipe.public_id == public_id))
+            assert recipe is not None
+            old_path = tmp_path / recipe.images[0].stored_filename
+
+        replacement = PNG_BYTES.replace(b"0", b"1")
+        edited = client.post(
+            f"/recipes/{public_id}/edit",
+            data={"title": "Receita com imagem substituída"},
+            files={"image": ("nova.png", io.BytesIO(replacement), "image/png")},
+            follow_redirects=False,
+        )
+        assert edited.status_code == 303
+
+        detail = client.get(f"/recipes/{public_id}")
+        assert "nova.png" not in detail.text
+        assert "Receita com imagem substituída" in detail.text
+        with SessionLocal() as db:
+            recipe = db.scalar(select(Recipe).where(Recipe.public_id == public_id))
+            assert recipe is not None
+            assert len(recipe.images) == 1
+            new_path = tmp_path / recipe.images[0].stored_filename
+            new_image_id = recipe.images[0].public_id
+
+        assert not old_path.exists()
+        assert new_path.exists()
+        assert client.get(f"/recipes/{public_id}/images/{new_image_id}").content == replacement
+
+
 def test_delete_recipe_removes_image_import_job_and_recipe_reference(tmp_path, monkeypatch) -> None:
     from app.core.config import settings
 
