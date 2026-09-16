@@ -13,6 +13,8 @@ ingredientes, preparo, tags, história/origem e imagem opcional.
   e lista de compras.
 - [Segurança e privacidade](docs/SECURITY.md): controles do MVP, aviso para
   testadores, consentimento e orientações para IA/OCR futuros.
+- [Estratégia de testes](docs/TESTING.md): inventário funcional e matriz de
+  critérios de aceite.
 
 ## Requisitos
 
@@ -177,6 +179,10 @@ pytest
 Os testes cobrem os três fluxos principais: cadastro manual completo,
 importação local com análise e revisão, e lista de compras. Também verificam os
 controles mínimos de upload e proteção dos dados locais.
+
+Durante a execução, `tests/conftest.py` usa SQLite e uploads temporários; o
+arquivo `data/app.db` e o conteúdo de `uploads/` do ambiente local não são
+alterados pela suíte.
 
 ## Limitações desta etapa
 
