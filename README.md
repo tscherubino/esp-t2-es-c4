@@ -77,6 +77,14 @@ uvicorn app.main:app --reload
 
 Abra <http://127.0.0.1:8000/> no navegador.
 
+### Navegação da interface
+
+A navegação principal está disponível em todas as telas e oferece acesso a
+Início, Receitas, Importar, Lista de compras e Nova receita. A interface foi
+organizada para telas pequenas, com foco visível para teclado, labels nos
+campos, mensagens de erro acessíveis e um link para pular diretamente ao
+conteúdo.
+
 ## Fluxo manual de receitas
 
 1. Acesse <http://127.0.0.1:8000/recipes>.
@@ -116,6 +124,10 @@ Para análise estruturada via API, use `POST /api/recipes/import/analyze` com
 `multipart/form-data`. A resposta contém o `ImportJob`, o texto analisado, os
 campos estruturados, avisos e os `confidence_score`s. A receita não é salva
 definitivamente até a revisão humana.
+
+O botão **Lista de compras** leva a uma tela de estado vazio enquanto a geração
+da lista ainda não foi implementada. A tela já apresenta o caminho de retorno
+ao acervo e permanece sem criar regras de negócio ou persistência adicional.
 
 ## Verificação
 

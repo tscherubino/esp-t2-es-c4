@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.core.config import settings
 from app.db.session import initialize_database
-from app.routers import imports, recipes
+from app.routers import imports, recipes, shopping
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -31,6 +31,7 @@ app.include_router(imports.router)
 app.include_router(imports.api_router)
 app.include_router(recipes.router)
 app.include_router(recipes.api_router)
+app.include_router(shopping.router)
 
 
 @app.get("/", include_in_schema=False)

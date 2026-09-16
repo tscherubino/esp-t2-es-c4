@@ -3,15 +3,18 @@
 {% block title %}Início — {{ app_name }}{% endblock %}
 
 {% block content %}
-  <section class="rounded-2xl bg-white p-8 shadow-sm">
-    <p class="mb-2 text-sm font-medium uppercase tracking-wide text-amber-700">MVP local</p>
-    <h1 class="text-3xl font-bold">{{ app_name }}</h1>
-    <p class="mt-4 text-stone-600">
-      Estrutura inicial pronta para os próximos ciclos de implementação.
-    </p>
-    <div class="mt-6 flex gap-3">
-      <a class="rounded-lg bg-amber-700 px-4 py-2 font-medium text-white" href="/recipes">Ver receitas</a>
-      <a class="rounded-lg border border-stone-300 px-4 py-2 font-medium" href="/recipes/new">Nova receita</a>
+  <section class="overflow-hidden rounded-2xl bg-stone-900 px-6 py-10 text-white shadow-sm sm:px-10 sm:py-14">
+    <p class="mb-3 text-sm font-medium uppercase tracking-widest text-amber-300">Seu acervo de sabores</p>
+    <h1 class="max-w-2xl text-3xl font-bold tracking-tight sm:text-5xl">Receitas que guardam uma história.</h1>
+    <p class="mt-5 max-w-xl text-base leading-7 text-stone-300">Organize receitas pessoais e de família em um só lugar, com a imagem original e as memórias preservadas.</p>
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+      <a class="rounded-lg bg-amber-500 px-5 py-3 text-center font-semibold text-stone-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300" href="/recipes/new">Cadastrar receita</a>
+      <a class="rounded-lg border border-stone-600 px-5 py-3 text-center font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300" href="/recipes/import">Importar foto ou texto</a>
     </div>
+  </section>
+  <section class="mt-8 grid gap-4 sm:grid-cols-3" aria-label="Como começar">
+    <article class="rounded-xl bg-white p-5 shadow-sm"><p class="text-sm font-semibold text-amber-700">01 · Guarde</p><h2 class="mt-2 font-semibold">Traga suas receitas</h2><p class="mt-2 text-sm leading-6 text-stone-600">Digite uma receita ou importe uma foto, print ou texto.</p></article>
+    <article class="rounded-xl bg-white p-5 shadow-sm"><p class="text-sm font-semibold text-amber-700">02 · Revise</p><h2 class="mt-2 font-semibold">Confira cada detalhe</h2><p class="mt-2 text-sm leading-6 text-stone-600">A organização automática é uma sugestão: você decide o que salvar.</p></article>
+    <article class="rounded-xl bg-white p-5 shadow-sm"><p class="text-sm font-semibold text-amber-700">03 · Cozinhe</p><h2 class="mt-2 font-semibold">Consulte quando quiser</h2><p class="mt-2 text-sm leading-6 text-stone-600">Encontre o preparo e monte uma lista de compras simples.</p></article>
   </section>
 {% endblock %}

@@ -18,3 +18,11 @@ def test_health_check_is_available() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_shopping_list_page_is_available() -> None:
+    response = client.get("/shopping-list")
+
+    assert response.status_code == 200
+    assert "Lista de compras" in response.text
+    assert "Ainda não há uma lista" in response.text
