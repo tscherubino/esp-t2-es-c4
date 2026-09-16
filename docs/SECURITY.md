@@ -19,6 +19,8 @@ autenticação, hardening de servidor ou uma avaliação de produção.
 - A exclusão de uma receita remove suas imagens locais associadas.
 - A exclusão de uma receita remove seus jobs de importação associados e
   desvincula itens de listas de compras sem apagar o conteúdo da lista.
+- A exclusão de uma lista de compras exige a identificação da lista pertencente
+  ao usuário e remove também seus itens vinculados pela cascata do banco local.
 - O banco, uploads e arquivos `.env` são ignorados pelo Git.
 - Falhas de importação registram somente tipo de evento e tipo da exceção, sem
   texto original, nomes de família ou outros dados da receita.

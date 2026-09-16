@@ -146,6 +146,12 @@ def remove_item(db: Session, item: ShoppingListItem) -> None:
     db.commit()
 
 
+def delete_shopping_list(db: Session, shopping_list: ShoppingList) -> None:
+    """Exclui uma lista e seus itens vinculados pela cascata do modelo."""
+    db.delete(shopping_list)
+    db.commit()
+
+
 def shopping_list_text(shopping_list: ShoppingList) -> str:
     lines = [shopping_list.name]
     for item in shopping_list.items:
@@ -163,6 +169,7 @@ __all__ = [
     "add_item",
     "consolidate_ingredients",
     "create_list_from_recipes",
+    "delete_shopping_list",
     "remove_item",
     "shopping_list_text",
     "toggle_item",

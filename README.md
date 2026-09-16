@@ -167,7 +167,8 @@ definitivamente até a revisão humana.
 2. Selecione uma ou mais receitas e informe o nome da lista.
 3. Gere a lista para consolidar ingredientes com mesmo nome e unidade.
 4. Edite, marque como comprado, remova ou adicione itens manualmente.
-5. Use **Copiar lista** ou **Abrir como texto** para levar a lista ao celular.
+5. Em **Listas anteriores**, use **Excluir** para remover uma lista inteira e seus itens.
+6. Use **Copiar lista** ou **Abrir como texto** para levar a lista ao celular.
 
 Também é possível gerar uma lista diretamente pelo botão **Gerar lista de
 compras** na página de uma receita. Quantidades numéricas são somadas apenas
@@ -243,7 +244,7 @@ autorização.
 - [ ] iniciar `uvicorn app.main:app --reload`;
 - [ ] validar `/health`;
 - [ ] testar cadastro manual e importação com revisão;
-- [ ] testar geração e edição de lista de compras;
+- [ ] testar geração, edição e exclusão de lista de compras;
 - [ ] não inserir dados de terceiros sem autorização;
 - [ ] não versionar `.env`, `data/app.db` ou conteúdo de `uploads/`.
 

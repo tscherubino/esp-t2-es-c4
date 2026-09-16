@@ -54,6 +54,7 @@ def test_shopping_list_flow_generates_and_manages_items() -> None:
         )
         assert generated.status_code == 200
         assert "Mercado da semana" in generated.text
+        assert "Excluir" in generated.text
         assert "3 xícara de arroz" in generated.text
 
         from sqlalchemy import select
@@ -89,3 +90,10 @@ def test_shopping_list_flow_generates_and_manages_items() -> None:
         assert client.post(
             f"/shopping-list/{list_id}/items/{item_id}/delete", follow_redirects=False
         ).status_code == 303
+
+        deleted = client.post(f"/shopping-list/{list_id}/delete", follow_redirects=False)
+        assert deleted.status_code == 303
+        assert client.get(f"/shopping-list?list_id={list_id}").status_code == 200
+
+        with SessionLocal() as db:
+            assert db.scalar(select(ShoppingList).where(ShoppingList.public_id == list_id)) is None

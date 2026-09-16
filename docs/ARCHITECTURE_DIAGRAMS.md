@@ -362,6 +362,10 @@ sequenceDiagram
     User->>UI: edita, marca, remove ou adiciona item
     UI->>Router: POST operação do item
     Router->>Service: atualiza estado
+    User->>UI: exclui uma lista anterior
+    UI->>Router: POST /shopping-list/{id}/delete
+    Router->>Service: delete_shopping_list(...)
+    Service->>DB: remove lista e itens em cascata
     Service->>DB: COMMIT
 ```
 

@@ -16,6 +16,7 @@ from app.services.shopping_service import (
     ShoppingItemInput,
     add_item,
     create_list_from_recipes,
+    delete_shopping_list,
     remove_item,
     shopping_list_text,
     toggle_item,
@@ -58,6 +59,16 @@ def generate_shopping_list(request: Request, recipe_ids: Annotated[list[str], Fo
     except ValueError as error:
         return render_page(request, db, user, error=str(error))
     return render_page(request, db, user, selected_list=shopping_list, warnings=warnings)
+
+
+@router.post("/shopping-list/{list_public_id}/delete")
+def delete_shopping_list_route(list_public_id: str, db: Session = Depends(get_db)):
+    user = get_demo_user(db)
+    shopping_list = get_shopping_list(db, list_public_id, user)
+    if shopping_list is None:
+        raise HTTPException(status_code=404, detail="Lista de compras não encontrada.")
+    delete_shopping_list(db, shopping_list)
+    return RedirectResponse("/shopping-list", status_code=303)
 
 
 @router.post("/shopping-list/{list_public_id}/items")

@@ -26,8 +26,8 @@ Não há dependência de Docker, PostgreSQL, API externa, OCR real ou LLM real.
    locais e revisão antes da persistência.
 5. Preservação de texto e imagem originais da importação.
 6. Lista de compras a partir de uma ou várias receitas.
-7. Consolidação por nome e unidade, edição, conclusão, remoção, adição manual e
-   cópia como texto.
+7. Consolidação por nome e unidade, edição, conclusão, remoção, adição manual,
+   exclusão de listas e cópia como texto.
 8. Proteções locais de upload, dados ignorados no Git e avisos de privacidade.
 
 ## Matriz de critérios de aceite
@@ -43,7 +43,7 @@ Não há dependência de Docker, PostgreSQL, API externa, OCR real ou LLM real.
 | Fontes originais | texto e imagem permanecem preservados | `tests/test_import.py`, `tests/test_manual_flow.py` |
 | Estruturação | ingredientes, etapas, confiança e avisos são gerados | `tests/test_import.py` |
 | Lista de compras | uma ou várias receitas geram itens consolidados | `tests/test_shopping.py` |
-| Itens | editar, marcar, remover, adicionar e copiar como texto | `tests/test_shopping.py` |
+| Itens e listas | editar, marcar, remover, adicionar, excluir lista e copiar como texto | `tests/test_shopping.py` |
 | Segurança | exclusão não atravessa o diretório de uploads | `tests/test_security.py` |
 | Regressões P1 | upload inválido, limite, falha amigável e exclusão completa | `tests/test_critical_regressions.py` |
 
