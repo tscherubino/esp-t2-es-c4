@@ -149,6 +149,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -156,6 +158,13 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Configuração e dados locais do Livro Vivo de Receitas
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+uploads/*
+!uploads/.gitkeep
 
 # Spyder project settings
 .spyderproject
