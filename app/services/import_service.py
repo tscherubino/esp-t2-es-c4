@@ -26,12 +26,14 @@ logger = logging.getLogger(__name__)
 
 
 def build_ocr_provider():
+    """Seleciona o provider de OCR local conforme a configuração do ambiente."""
     if settings.import_ocr_provider == "manual":
         return ManualTranscriptionOCRProvider()
     return MockOCRProvider()
 
 
 def build_recipe_parser():
+    """Seleciona o parser local conforme a configuração do ambiente."""
     if settings.import_parser == "mock_llm":
         return MockLLMRecipeParser()
     return RuleBasedRecipeParser()
@@ -41,6 +43,7 @@ class RecipeImportService:
     """Analisa fontes, registra o job e finaliza somente após revisão."""
 
     def __init__(self, ocr_provider=None, recipe_parser=None):
+        """Inicializa o serviço com providers informados ou com os padrões locais."""
         self.ocr_provider = ocr_provider or build_ocr_provider()
         self.recipe_parser = recipe_parser or build_recipe_parser()
 
@@ -52,6 +55,7 @@ class RecipeImportService:
         image: Optional[UploadFile],
         manual_transcription: Optional[str] = None,
     ) -> tuple[ImportJob, StructuredRecipe, str]:
+        """Analisa texto ou imagem, persiste o job e retorna a sugestão para revisão."""
         source_text = original_text.strip() if original_text and original_text.strip() else None
         job = ImportJob(user_id=user.id, source_type="text", status="processing", original_text=source_text)
         db.add(job)
@@ -97,6 +101,7 @@ class RecipeImportService:
             raise ValueError(f"Não foi possível analisar a importação: {error}") from error
 
     def get_job(self, db: Session, public_id: str, user: User) -> ImportJob | None:
+        """Busca um job de importação pertencente ao usuário informado."""
         return db.scalar(
             select(ImportJob).where(ImportJob.public_id == public_id, ImportJob.user_id == user.id)
         )
@@ -108,6 +113,7 @@ class RecipeImportService:
         user: User,
         review: ImportReviewInput,
     ) -> Recipe:
+        """Finaliza uma importação revisada e cria a receita definitiva."""
         if job.status != "completed" or not job.structured_payload:
             raise ValueError("Esta importação não está pronta para revisão.")
 

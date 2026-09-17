@@ -12,6 +12,7 @@ from app.repositories.recipe_repository import get_recipe
 
 @dataclass
 class ShoppingItemInput:
+    """Dados de um item de compras antes da persistência."""
     description: str
     quantity: str | None = None
     unit: str | None = None
@@ -19,10 +20,12 @@ class ShoppingItemInput:
 
 
 def _normalize(value: str | None) -> str:
+    """Normaliza texto para comparação sem alterar o valor exibido ao usuário."""
     return re.sub(r"\s+", " ", (value or "").strip()).casefold()
 
 
 def _parse_quantity(value: str | None) -> Decimal | None:
+    """Converte quantidades numéricas em Decimal ou retorna None para texto livre."""
     if not value:
         return None
     normalized = value.strip().replace(",", ".")
@@ -33,11 +36,13 @@ def _parse_quantity(value: str | None) -> Decimal | None:
 
 
 def _format_quantity(value: Decimal) -> str:
+    """Formata uma quantidade decimal sem zeros desnecessários."""
     formatted = format(value.normalize(), "f")
     return formatted.rstrip("0").rstrip(".") if "." in formatted else formatted
 
 
 def _ingredient_to_item(ingredient: Ingredient) -> ShoppingItemInput:
+    """Converte uma entidade de ingrediente no formato usado pela lista de compras."""
     return ShoppingItemInput(
         description=ingredient.description,
         quantity=ingredient.quantity,
@@ -80,6 +85,7 @@ def consolidate_ingredients(ingredients: list[Ingredient]) -> tuple[list[Shoppin
 def create_list_from_recipes(
     db: Session, user: User, recipe_public_ids: list[str], name: str = "Lista de compras"
 ) -> tuple[ShoppingList, list[str]]:
+    """Gera uma lista a partir das receitas do usuário e consolida seus ingredientes."""
     recipes: list[Recipe] = []
     for public_id in dict.fromkeys(recipe_public_ids):
         recipe = get_recipe(db, public_id, user)
@@ -109,6 +115,7 @@ def create_list_from_recipes(
 
 
 def add_item(db: Session, shopping_list: ShoppingList, data: ShoppingItemInput) -> ShoppingListItem:
+    """Adiciona um item manual validado à lista e confirma a transação."""
     if not data.description.strip():
         raise ValueError("Informe o nome do item.")
     item = ShoppingListItem(
@@ -125,6 +132,7 @@ def add_item(db: Session, shopping_list: ShoppingList, data: ShoppingItemInput) 
 
 
 def update_item(db: Session, item: ShoppingListItem, data: ShoppingItemInput) -> ShoppingListItem:
+    """Atualiza os campos editáveis de um item e confirma a transação."""
     if not data.description.strip():
         raise ValueError("Informe o nome do item.")
     item.description = data.description.strip()
@@ -136,12 +144,14 @@ def update_item(db: Session, item: ShoppingListItem, data: ShoppingItemInput) ->
 
 
 def toggle_item(db: Session, item: ShoppingListItem) -> ShoppingListItem:
+    """Inverte o estado de comprado do item."""
     item.is_checked = not item.is_checked
     db.commit()
     return item
 
 
 def remove_item(db: Session, item: ShoppingListItem) -> None:
+    """Remove um item individual da lista."""
     db.delete(item)
     db.commit()
 
@@ -153,6 +163,7 @@ def delete_shopping_list(db: Session, shopping_list: ShoppingList) -> None:
 
 
 def shopping_list_text(shopping_list: ShoppingList) -> str:
+    """Renderiza uma lista de compras em texto simples para cópia local."""
     lines = [shopping_list.name]
     for item in shopping_list.items:
         prefix = "[x]" if item.is_checked else "[ ]"

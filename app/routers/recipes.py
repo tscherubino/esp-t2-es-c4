@@ -23,15 +23,18 @@ templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "
 
 
 def to_recipe_input(data: RecipeManualInput) -> RecipeInput:
+    """Converte o schema Pydantic do formulário no objeto do serviço de domínio."""
     return RecipeInput(**data.model_dump())
 
 
 def recipe_context(request: Request, **values: object) -> dict[str, object]:
+    """Monta o contexto comum dos templates de receitas."""
     return {"request": request, "app_name": settings.app_name, **values}
 
 
 @router.get("")
 def recipe_list(request: Request, db: Session = Depends(get_db)):
+    """Renderiza a listagem de receitas do usuário local."""
     user = get_demo_user(db)
     return templates.TemplateResponse(
         request=request,
@@ -42,6 +45,7 @@ def recipe_list(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/new")
 def new_recipe(request: Request):
+    """Renderiza o formulário vazio para cadastro manual."""
     return templates.TemplateResponse(
         request=request,
         name="recipes/form.html",
@@ -65,6 +69,7 @@ async def create_manual_recipe(
     image: UploadFile | None = None,
     db: Session = Depends(get_db),
 ):
+    """Recebe e persiste uma receita manual, incluindo imagem opcional."""
     stored_image: tuple[str, str, str] | None = None
     try:
         data = RecipeManualInput(
@@ -115,6 +120,7 @@ async def create_manual_recipe(
 
 @router.get("/{public_id}")
 def recipe_detail(public_id: str, request: Request, db: Session = Depends(get_db)):
+    """Renderiza os detalhes de uma receita autorizada."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
         raise HTTPException(status_code=404, detail="Receita não encontrada.")
@@ -127,6 +133,7 @@ def recipe_detail(public_id: str, request: Request, db: Session = Depends(get_db
 
 @router.get("/{public_id}/edit")
 def edit_recipe(public_id: str, request: Request, db: Session = Depends(get_db)):
+    """Renderiza o formulário preenchido para edição de uma receita."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
         raise HTTPException(status_code=404, detail="Receita não encontrada.")
@@ -154,6 +161,7 @@ async def update_manual_recipe(
     image: UploadFile | None = None,
     db: Session = Depends(get_db),
 ):
+    """Atualiza uma receita manual e substitui sua imagem quando enviada."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
         raise HTTPException(status_code=404, detail="Receita não encontrada.")
@@ -207,6 +215,7 @@ async def update_manual_recipe(
 
 @router.post("/{public_id}/delete")
 def remove_recipe(public_id: str, db: Session = Depends(get_db)):
+    """Exclui uma receita autorizada e redireciona para a listagem."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
         raise HTTPException(status_code=404, detail="Receita não encontrada.")
@@ -216,6 +225,7 @@ def remove_recipe(public_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{public_id}/images/{image_public_id}")
 def recipe_image(public_id: str, image_public_id: str, db: Session = Depends(get_db)):
+    """Entrega uma imagem somente após validar receita, arquivo e diretório local."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
         raise HTTPException(status_code=404, detail="Receita não encontrada.")
@@ -230,6 +240,7 @@ def recipe_image(public_id: str, image_public_id: str, db: Session = Depends(get
 
 @api_router.get("")
 def recipe_list_json(db: Session = Depends(get_db)) -> list[dict[str, object]]:
+    """Retorna a listagem resumida de receitas em JSON."""
     user = get_demo_user(db)
     return [
         {"public_id": recipe.public_id, "title": recipe.title, "servings": recipe.servings}
@@ -239,6 +250,7 @@ def recipe_list_json(db: Session = Depends(get_db)) -> list[dict[str, object]]:
 
 @api_router.get("/{public_id}")
 def recipe_detail_json(public_id: str, db: Session = Depends(get_db)) -> dict[str, object]:
+    """Retorna uma receita autorizada e seus componentes em JSON."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
         raise HTTPException(status_code=404, detail="Receita não encontrada.")
