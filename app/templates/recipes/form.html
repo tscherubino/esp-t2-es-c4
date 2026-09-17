@@ -24,26 +24,40 @@
       </div>
     </section>
 
-    <section class="rounded-xl bg-white p-6 shadow-sm">
-      <h2 class="mb-4 text-xl font-semibold">Ingredientes</h2>
-      <div class="space-y-2">
-        {% for i in range(5) %}
+    <section class="rounded-xl bg-white p-6 shadow-sm" data-repeatable-group>
+      <div class="flex items-center justify-between gap-3"><h2 class="mb-4 text-xl font-semibold">Ingredientes</h2><button class="rounded-lg border border-amber-700 px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50" type="button" data-add-row="ingredient">Adicionar ingrediente</button></div>
+      {% set ingredient_count = 5 %}
+      {% if recipe and recipe.ingredients|length > ingredient_count %}{% set ingredient_count = recipe.ingredients|length %}{% endif %}
+      <div class="space-y-2" data-repeatable-list="ingredient">
+        {% for i in range(ingredient_count) %}
           {% set ingredient = recipe.ingredients[i] if recipe and i < recipe.ingredients|length else none %}
-          <div class="grid gap-2 md:grid-cols-12">
-            <input aria-label="Ingrediente {{ i + 1 }}" class="rounded-lg border border-stone-300 p-3 md:col-span-6" name="ingredient_descriptions" placeholder="Ingrediente" value="{{ ingredient.description if ingredient else '' }}">
+          <div class="grid gap-2 md:grid-cols-12" data-repeatable-row>
+            <input aria-label="Ingrediente {{ i + 1 }}" class="rounded-lg border border-stone-300 p-3 md:col-span-5" name="ingredient_descriptions" placeholder="Ingrediente" value="{{ ingredient.description if ingredient else '' }}">
             <input aria-label="Quantidade do ingrediente {{ i + 1 }}" class="rounded-lg border border-stone-300 p-3 md:col-span-3" name="ingredient_quantities" placeholder="Quantidade" value="{{ ingredient.quantity if ingredient and ingredient.quantity else '' }}">
             <input aria-label="Unidade do ingrediente {{ i + 1 }}" class="rounded-lg border border-stone-300 p-3 md:col-span-3" name="ingredient_units" placeholder="Unidade" value="{{ ingredient.unit if ingredient and ingredient.unit else '' }}">
+            <button class="rounded-lg border border-stone-300 px-2 py-2 text-sm text-stone-600 hover:bg-stone-50 md:col-span-1" type="button" data-remove-row aria-label="Remover ingrediente {{ i + 1 }}">Remover</button>
           </div>
         {% endfor %}
       </div>
+      <template data-row-template="ingredient"><div class="grid gap-2 md:grid-cols-12" data-repeatable-row>
+        <input aria-label="Ingrediente __NUMBER__" class="rounded-lg border border-stone-300 p-3 md:col-span-5" name="ingredient_descriptions" placeholder="Ingrediente">
+        <input aria-label="Quantidade do ingrediente __NUMBER__" class="rounded-lg border border-stone-300 p-3 md:col-span-3" name="ingredient_quantities" placeholder="Quantidade">
+        <input aria-label="Unidade do ingrediente __NUMBER__" class="rounded-lg border border-stone-300 p-3 md:col-span-3" name="ingredient_units" placeholder="Unidade">
+        <button class="rounded-lg border border-stone-300 px-2 py-2 text-sm text-stone-600 hover:bg-stone-50 md:col-span-1" type="button" data-remove-row aria-label="Remover ingrediente __NUMBER__">Remover</button>
+      </div></template>
     </section>
 
-    <section class="rounded-xl bg-white p-6 shadow-sm">
-      <h2 class="mb-4 text-xl font-semibold">Modo de preparo</h2>
-      {% for i in range(5) %}
-        {% set step = recipe.preparation_steps[i] if recipe and i < recipe.preparation_steps|length else none %}
-        <label for="step-{{ i }}" class="mb-3 block">Etapa {{ i + 1 }}<textarea id="step-{{ i }}" class="mt-1 min-h-20 w-full rounded-lg border border-stone-300 p-3 focus:border-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-200" name="step_instructions">{{ step.instruction if step else '' }}</textarea></label>
-      {% endfor %}
+    <section class="rounded-xl bg-white p-6 shadow-sm" data-repeatable-group>
+      <div class="flex items-center justify-between gap-3"><h2 class="mb-4 text-xl font-semibold">Modo de preparo</h2><button class="rounded-lg border border-amber-700 px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50" type="button" data-add-row="step">Adicionar etapa</button></div>
+      {% set step_count = 5 %}
+      {% if recipe and recipe.preparation_steps|length > step_count %}{% set step_count = recipe.preparation_steps|length %}{% endif %}
+      <div class="space-y-2" data-repeatable-list="step">
+        {% for i in range(step_count) %}
+          {% set step = recipe.preparation_steps[i] if recipe and i < recipe.preparation_steps|length else none %}
+          <div data-repeatable-row><label for="step-{{ i }}" class="mb-1 block">Etapa {{ i + 1 }}<textarea id="step-{{ i }}" class="mt-1 min-h-20 w-full rounded-lg border border-stone-300 p-3 focus:border-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-200" name="step_instructions">{{ step.instruction if step else '' }}</textarea></label><button class="mb-3 rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-600 hover:bg-stone-50" type="button" data-remove-row aria-label="Remover etapa {{ i + 1 }}">Remover etapa</button></div>
+        {% endfor %}
+      </div>
+      <template data-row-template="step"><div data-repeatable-row><label for="step-__INDEX__" class="mb-1 block">Etapa __NUMBER__<textarea id="step-__INDEX__" class="mt-1 min-h-20 w-full rounded-lg border border-stone-300 p-3 focus:border-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-200" name="step_instructions"></textarea></label><button class="mb-3 rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-600 hover:bg-stone-50" type="button" data-remove-row aria-label="Remover etapa __NUMBER__">Remover etapa</button></div></template>
     </section>
 
     <section class="rounded-xl bg-white p-6 shadow-sm">
@@ -57,4 +71,25 @@
 
     <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><a class="rounded-lg border border-stone-300 px-5 py-3 text-center font-semibold hover:bg-white" href="/recipes">Cancelar</a><button class="rounded-lg bg-amber-700 px-5 py-3 font-semibold text-white hover:bg-amber-800" type="submit">Salvar receita</button></div>
   </form>
+  <script>
+    document.querySelectorAll('[data-repeatable-group]').forEach((group) => {
+      const list = group.querySelector('[data-repeatable-list]');
+      const template = group.querySelector('[data-row-template]');
+      const addButton = group.querySelector('[data-add-row]');
+      let nextNumber = list.querySelectorAll('[data-repeatable-row]').length + 1;
+
+      addButton.addEventListener('click', () => {
+        const row = template.innerHTML
+          .replaceAll('__INDEX__', String(nextNumber - 1))
+          .replaceAll('__NUMBER__', String(nextNumber));
+        list.insertAdjacentHTML('beforeend', row);
+        nextNumber += 1;
+      });
+
+      list.addEventListener('click', (event) => {
+        const removeButton = event.target.closest('[data-remove-row]');
+        if (removeButton) removeButton.closest('[data-repeatable-row]').remove();
+      });
+    });
+  </script>
 {% endblock %}

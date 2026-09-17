@@ -98,3 +98,37 @@ def test_manual_recipe_flow_end_to_end() -> None:
         imported_id = finalized.headers["location"].rsplit("/", 1)[-1]
         assert "Receita importada revisada" in client.get(f"/recipes/{imported_id}").text
         assert client.post(f"/recipes/{imported_id}/delete", follow_redirects=False).status_code == 303
+
+
+def test_manual_recipe_supports_more_than_five_ingredients_and_steps() -> None:
+    with TestClient(app) as client:
+        response = client.get("/recipes/new")
+        assert response.status_code == 200
+        assert 'data-add-row="ingredient"' in response.text
+        assert 'data-add-row="step"' in response.text
+
+        created = client.post(
+            "/recipes",
+            data={
+                "title": "Receita com muitos itens",
+                "ingredient_descriptions": [f"ingrediente {index}" for index in range(1, 8)],
+                "ingredient_quantities": [str(index) for index in range(1, 8)],
+                "ingredient_units": ["unidade"] * 7,
+                "step_instructions": [f"Etapa de teste {index}" for index in range(1, 8)],
+            },
+            follow_redirects=False,
+        )
+        assert created.status_code == 303
+        public_id = created.headers["location"].rsplit("/", 1)[-1]
+
+        detail = client.get(f"/recipes/{public_id}")
+        edit = client.get(f"/recipes/{public_id}/edit")
+
+        assert detail.status_code == 200
+        assert "ingrediente 7" in detail.text
+        assert "Etapa de teste 7" in detail.text
+        assert edit.status_code == 200
+        assert 'aria-label="Ingrediente 7"' in edit.text
+        assert 'for="step-6"' in edit.text
+
+        assert client.post(f"/recipes/{public_id}/delete", follow_redirects=False).status_code == 303
