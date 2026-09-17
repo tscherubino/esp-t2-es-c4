@@ -16,6 +16,7 @@ class OCRProvider(ABC):
 
     @abstractmethod
     def extract_text(self, image: bytes, manual_transcription: Optional[str] = None) -> str:
+        """Extrai texto de uma imagem, opcionalmente usando transcrição manual."""
         raise NotImplementedError
 
 
@@ -23,6 +24,7 @@ class MockOCRProvider(OCRProvider):
     """OCR determinístico local, sem leitura real da imagem."""
 
     def extract_text(self, image: bytes, manual_transcription: Optional[str] = None) -> str:
+        """Retorna a transcrição manual ou um texto determinístico de demonstração."""
         if manual_transcription and manual_transcription.strip():
             return manual_transcription.strip()
         return (
@@ -40,6 +42,7 @@ class ManualTranscriptionOCRProvider(OCRProvider):
     """Provider que usa exclusivamente a transcrição fornecida pelo usuário."""
 
     def extract_text(self, image: bytes, manual_transcription: Optional[str] = None) -> str:
+        """Valida e devolve a transcrição fornecida pelo usuário."""
         if not manual_transcription or not manual_transcription.strip():
             raise ValueError("Informe uma transcrição manual para a imagem.")
         return manual_transcription.strip()
@@ -50,10 +53,12 @@ class LLMRecipeParser(ABC):
 
     @abstractmethod
     def parse(self, text: str) -> StructuredRecipe:
+        """Converte texto bruto em uma sugestão estruturada de receita."""
         raise NotImplementedError
 
 
 def _confidence(value: float) -> float:
+    """Limita uma confiança ao intervalo de zero a um com duas casas decimais."""
     return max(0.0, min(1.0, round(value, 2)))
 
 
@@ -61,6 +66,7 @@ class RuleBasedRecipeParser(LLMRecipeParser):
     """Parser local simples por seções e padrões de texto."""
 
     def parse(self, text: str) -> StructuredRecipe:
+        """Identifica título, metadados, ingredientes e etapas por regras locais."""
         lines = [line.strip() for line in text.splitlines() if line.strip()]
         if not lines:
             raise ValueError("Não foi possível estruturar um texto vazio.")
@@ -102,6 +108,7 @@ class RuleBasedRecipeParser(LLMRecipeParser):
 
     @staticmethod
     def _split_sections(lines: list[str]) -> tuple[list[str], list[str]]:
+        """Separa linhas de ingredientes e preparo conforme os cabeçalhos encontrados."""
         ingredients: list[str] = []
         steps: list[str] = []
         section = "ingredients"
@@ -120,6 +127,7 @@ class RuleBasedRecipeParser(LLMRecipeParser):
 
     @staticmethod
     def _ingredient(line: str) -> IngredientSuggestion:
+        """Converte uma linha de ingrediente em nome, quantidade e unidade sugeridos."""
         match = re.match(r"^(\d+(?:[,.]\d+)?)\s+([\wÀ-ÿ]+)\s+(?:de\s+)?(.+)$", line)
         if match:
             return IngredientSuggestion(
@@ -142,6 +150,7 @@ class MockLLMRecipeParser(LLMRecipeParser):
     """Parser mockado de LLM que delega em regras determinísticas locais."""
 
     def parse(self, text: str) -> StructuredRecipe:
+        """Executa o parser local e ajusta a confiança para simular um LLM."""
         result = RuleBasedRecipeParser().parse(text)
         result.warnings.insert(0, "Estruturação gerada pelo MockLLMRecipeParser; revise antes de salvar.")
         for ingredient in result.ingredients:

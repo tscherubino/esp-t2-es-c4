@@ -7,6 +7,7 @@ from app.models import Recipe, RecipeTag, User
 
 
 def list_recipes(db: Session, user: User) -> list[Recipe]:
+    """Lista receitas do usuário com imagens e componentes carregados."""
     statement = (
         select(Recipe)
         .where(Recipe.user_id == user.id)
@@ -21,6 +22,7 @@ def list_recipes(db: Session, user: User) -> list[Recipe]:
 
 
 def get_recipe(db: Session, public_id: str, user: User) -> Recipe | None:
+    """Busca uma receita pelo identificador público dentro do usuário informado."""
     statement = (
         select(Recipe)
         .where(Recipe.public_id == public_id, Recipe.user_id == user.id)
@@ -35,6 +37,7 @@ def get_recipe(db: Session, public_id: str, user: User) -> Recipe | None:
 
 
 def get_demo_user(db: Session) -> User:
+    """Obtém ou cria o usuário local único usado pelo MVP."""
     user = db.scalar(select(User).where(User.name == "Usuário demo"))
     if user is None:
         user = User(name="Usuário demo")

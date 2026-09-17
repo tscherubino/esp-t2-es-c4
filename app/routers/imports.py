@@ -21,11 +21,13 @@ templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "
 
 
 def context(request: Request, **values: object) -> dict[str, object]:
+    """Monta o contexto comum dos templates de importação."""
     return {"request": request, "app_name": settings.app_name, **values}
 
 
 @router.get("")
 def import_form(request: Request):
+    """Exibe o formulário inicial do fluxo de importação assistida."""
     return templates.TemplateResponse(
         request=request,
         name="recipes/import.html",
@@ -40,6 +42,7 @@ async def analyze_import(
     image: UploadFile | None = None,
     db: Session = Depends(get_db),
 ):
+    """Recebe uma fonte, cria o job local e redireciona para a revisão humana."""
     try:
         job, _, _ = await RecipeImportService().analyze(
             db, get_demo_user(db), original_text, image, manual_transcription
@@ -59,6 +62,7 @@ router.add_api_route("", analyze_import, methods=["POST"])
 
 @router.get("/{job_public_id}/review")
 def review_import(job_public_id: str, request: Request, db: Session = Depends(get_db)):
+    """Exibe os dados estruturados de um job antes da persistência definitiva."""
     job = RecipeImportService().get_job(db, job_public_id, get_demo_user(db))
     if job is None:
         raise HTTPException(status_code=404, detail="Importação não encontrada.")
@@ -89,6 +93,7 @@ def finalize_import(
     tags: Annotated[list[str], Form()] = [],
     db: Session = Depends(get_db),
 ):
+    """Valida a revisão humana e transforma o job concluído em uma receita."""
     service = RecipeImportService()
     user = get_demo_user(db)
     job = service.get_job(db, job_public_id, user)
@@ -126,6 +131,7 @@ async def analyze_import_json(
     image: UploadFile | None = None,
     db: Session = Depends(get_db),
 ) -> ImportAnalysisResponse:
+    """Executa a análise local pela API e devolve o resultado estruturado."""
     try:
         job, structured, source_text = await RecipeImportService().analyze(
             db, get_demo_user(db), original_text, image, manual_transcription

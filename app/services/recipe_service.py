@@ -13,6 +13,7 @@ from app.services.storage import delete_image
 
 @dataclass
 class RecipeInput:
+    """Dados normalizados usados para criar ou atualizar uma receita manual."""
     title: str
     servings: Optional[int]
     prep_time_minutes: Optional[int]
@@ -26,10 +27,12 @@ class RecipeInput:
 
 
 def clean_values(values: list[str]) -> list[str]:
+    """Remove espaços e entradas vazias de uma lista de valores do formulário."""
     return [value.strip() for value in values if value.strip()]
 
 
 def _replace_children(db: Session, recipe: Recipe, data: RecipeInput) -> None:
+    """Substitui ingredientes, etapas e tags preservando a posição dos itens."""
     recipe.ingredients.clear()
     recipe.preparation_steps.clear()
     old_recipe_tags = list(recipe.recipe_tags)
@@ -67,6 +70,7 @@ def _replace_children(db: Session, recipe: Recipe, data: RecipeInput) -> None:
 
 
 def create_recipe(db: Session, user: User, data: RecipeInput, *, commit: bool = True) -> Recipe:
+    """Cria uma receita e seus dados filhos, confirmando a transação quando solicitado."""
     recipe = Recipe(
         user_id=user.id,
         title=data.title.strip(),
@@ -85,6 +89,7 @@ def create_recipe(db: Session, user: User, data: RecipeInput, *, commit: bool = 
 
 
 def update_recipe(db: Session, recipe: Recipe, data: RecipeInput, *, commit: bool = True) -> Recipe:
+    """Atualiza os dados principais e substitui os componentes editáveis da receita."""
     recipe.title = data.title.strip()
     recipe.servings = data.servings
     recipe.prep_time_minutes = data.prep_time_minutes
@@ -99,6 +104,7 @@ def update_recipe(db: Session, recipe: Recipe, data: RecipeInput, *, commit: boo
 
 
 def delete_recipe(db: Session, recipe: Recipe) -> None:
+    """Exclui a receita, imagens, jobs associados e referências em listas de compras."""
     for image in recipe.images:
         delete_image(image.stored_filename)
     for import_job in list(recipe.import_jobs):

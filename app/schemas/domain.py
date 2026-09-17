@@ -7,28 +7,34 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class SchemaBase(BaseModel):
+    """Base Pydantic com suporte a leitura a partir de entidades ORM."""
     model_config = ConfigDict(from_attributes=True)
 
 
 class TimestampSchema(SchemaBase):
+    """Campos públicos comuns de auditoria temporal."""
     public_id: str
     created_at: datetime
     updated_at: datetime
 
 
 class UserCreate(SchemaBase):
+    """Entrada para criação de usuário."""
     name: str = Field(min_length=1, max_length=120)
 
 
 class UserUpdate(SchemaBase):
+    """Entrada parcial para atualização de usuário."""
     name: Optional[str] = Field(default=None, min_length=1, max_length=120)
 
 
 class UserRead(TimestampSchema):
+    """Representação de leitura de usuário."""
     name: str
 
 
 class RecipeCreate(SchemaBase):
+    """Entrada de API para criação de receita."""
     title: str = Field(min_length=1, max_length=200)
     servings: Optional[int] = Field(default=None, ge=1)
     prep_time_minutes: Optional[int] = Field(default=None, ge=0)
@@ -38,6 +44,7 @@ class RecipeCreate(SchemaBase):
 
 
 class RecipeUpdate(SchemaBase):
+    """Entrada de API para atualização parcial de receita."""
     title: Optional[str] = Field(default=None, min_length=1, max_length=200)
     servings: Optional[int] = Field(default=None, ge=1)
     prep_time_minutes: Optional[int] = Field(default=None, ge=0)
@@ -61,6 +68,7 @@ class RecipeManualInput(SchemaBase):
 
 
 class RecipeRead(TimestampSchema):
+    """Representação de leitura de receita."""
     title: str
     servings: Optional[int]
     prep_time_minutes: Optional[int]
@@ -70,6 +78,7 @@ class RecipeRead(TimestampSchema):
 
 
 class RecipeImageCreate(SchemaBase):
+    """Metadados necessários para registrar uma imagem de receita."""
     original_filename: str = Field(min_length=1, max_length=255)
     stored_filename: str = Field(min_length=1, max_length=255)
     content_type: str = Field(min_length=1, max_length=100)
@@ -77,6 +86,7 @@ class RecipeImageCreate(SchemaBase):
 
 
 class RecipeImageRead(TimestampSchema):
+    """Representação de leitura de imagem de receita."""
     recipe_id: int
     original_filename: str
     stored_filename: str
@@ -85,6 +95,7 @@ class RecipeImageRead(TimestampSchema):
 
 
 class IngredientCreate(SchemaBase):
+    """Entrada para criação de ingrediente."""
     description: str = Field(min_length=1, max_length=255)
     quantity: Optional[str] = Field(default=None, max_length=50)
     unit: Optional[str] = Field(default=None, max_length=50)
@@ -93,6 +104,7 @@ class IngredientCreate(SchemaBase):
 
 
 class IngredientUpdate(SchemaBase):
+    """Entrada parcial para atualização de ingrediente."""
     description: Optional[str] = Field(default=None, min_length=1, max_length=255)
     quantity: Optional[str] = Field(default=None, max_length=50)
     unit: Optional[str] = Field(default=None, max_length=50)
@@ -101,6 +113,7 @@ class IngredientUpdate(SchemaBase):
 
 
 class IngredientRead(TimestampSchema):
+    """Representação de leitura de ingrediente."""
     recipe_id: int
     description: str
     quantity: Optional[str]
@@ -110,60 +123,72 @@ class IngredientRead(TimestampSchema):
 
 
 class PreparationStepCreate(SchemaBase):
+    """Entrada para criação de uma etapa de preparo."""
     position: int = Field(ge=0)
     instruction: str = Field(min_length=1)
 
 
 class PreparationStepUpdate(SchemaBase):
+    """Entrada parcial para atualização de uma etapa."""
     position: Optional[int] = Field(default=None, ge=0)
     instruction: Optional[str] = Field(default=None, min_length=1)
 
 
 class PreparationStepRead(TimestampSchema):
+    """Representação de leitura de etapa de preparo."""
     recipe_id: int
     position: int
     instruction: str
 
 
 class TagCreate(SchemaBase):
+    """Entrada para criação de tag."""
     name: str = Field(min_length=1, max_length=80)
     user_public_id: str
 
 
 class TagUpdate(SchemaBase):
+    """Entrada parcial para atualização de tag."""
     name: Optional[str] = Field(default=None, min_length=1, max_length=80)
 
 
 class TagRead(TimestampSchema):
+    """Representação de leitura de tag."""
     user_id: int
     name: str
 
 
 class RecipeTagCreate(SchemaBase):
+    """Entrada para vincular uma tag a uma receita."""
     recipe_id: int
     tag_id: int
 
 
 class RecipeTagRead(TimestampSchema):
+    """Representação de leitura do vínculo entre receita e tag."""
     recipe_id: int
     tag_id: int
 
 
 class ShoppingListCreate(SchemaBase):
+    """Entrada para criação de lista de compras."""
     name: str = Field(min_length=1, max_length=150)
     user_public_id: str
 
 
 class ShoppingListUpdate(SchemaBase):
+    """Entrada parcial para atualização de lista de compras."""
     name: Optional[str] = Field(default=None, min_length=1, max_length=150)
 
 
 class ShoppingListRead(TimestampSchema):
+    """Representação de leitura de lista de compras."""
     user_id: int
     name: str
 
 
 class ShoppingListItemCreate(SchemaBase):
+    """Entrada para criação de item de compras."""
     description: str = Field(min_length=1, max_length=255)
     quantity: Optional[str] = Field(default=None, max_length=50)
     unit: Optional[str] = Field(default=None, max_length=50)
@@ -173,6 +198,7 @@ class ShoppingListItemCreate(SchemaBase):
 
 
 class ShoppingListItemUpdate(SchemaBase):
+    """Entrada parcial para atualização de item de compras."""
     description: Optional[str] = Field(default=None, min_length=1, max_length=255)
     quantity: Optional[str] = Field(default=None, max_length=50)
     unit: Optional[str] = Field(default=None, max_length=50)
@@ -182,6 +208,7 @@ class ShoppingListItemUpdate(SchemaBase):
 
 
 class ShoppingListItemRead(TimestampSchema):
+    """Representação de leitura de item de compras."""
     shopping_list_id: int
     recipe_id: Optional[int]
     description: str
@@ -192,6 +219,7 @@ class ShoppingListItemRead(TimestampSchema):
 
 
 class ImportJobCreate(SchemaBase):
+    """Entrada para criação de job de importação."""
     source_type: str = Field(min_length=1, max_length=30)
     user_public_id: str
     recipe_id: Optional[int] = None
@@ -199,12 +227,14 @@ class ImportJobCreate(SchemaBase):
 
 
 class ImportJobUpdate(SchemaBase):
+    """Entrada parcial para atualização de job de importação."""
     status: Optional[str] = Field(default=None, pattern="^(pending|processing|completed|failed)$")
     recipe_id: Optional[int] = None
     error_message: Optional[str] = None
 
 
 class ImportJobRead(TimestampSchema):
+    """Representação de leitura de job de importação."""
     user_id: int
     recipe_id: Optional[int]
     source_type: str
