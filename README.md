@@ -4,6 +4,95 @@ MVP local executado com Python 3.14, FastAPI e SQLite. O fluxo manual de
 receitas já permite cadastrar, consultar, editar e excluir receitas com
 ingredientes, preparo, tags, história/origem e imagem opcional.
 
+## Apresentação da solução
+
+O **Livro Vivo de Receitas** é uma solução web local para organizar receitas
+que hoje estão dispersas em cadernos, mensagens, fotos, prints e textos. A
+proposta é transformar esse material em um acervo pessoal pesquisável e
+editável, preservando a história e a origem de cada receita sem retirar do
+usuário o controle sobre o conteúdo.
+
+O público-alvo inicial são pessoas que guardam receitas de família, cozinheiros
+domésticos, organizadores de refeições e pequenos grupos que desejam reunir
+receitas de forma simples, sem depender de serviços externos, contas pagas ou
+infraestrutura complexa. O produto também é adequado para validação com
+usuários reais antes de investir em integrações mais sofisticadas.
+
+### Estratégia de produto e roadmap
+
+A estratégia é começar por um MVP local, simples e testável, concentrado nos
+problemas essenciais: capturar uma receita, organizar seus dados, preservar a
+fonte original e facilitar seu uso no dia a dia. A evolução acontece em ciclos
+incrementais, com revisão humana e validação prática antes de ampliar a
+complexidade técnica.
+
+O roadmap previsto é:
+
+1. **MVP local:** cadastro manual, importação assistida, revisão humana,
+   preservação de imagens e textos originais e lista de compras simples;
+2. **Validação com usuários:** observar os fluxos mais úteis, identificar erros
+   de estruturação e priorizar melhorias a partir do uso real;
+3. **Evolução assistida:** avaliar OCR e modelos de IA reais como integrações
+   opcionais, sempre atrás das interfaces existentes e sem torná-los requisitos
+   da aplicação;
+4. **Produto maduro:** considerar autenticação, suporte multiusuário, busca e
+   organização avançadas, exportações e outras funcionalidades somente após a
+   validação do núcleo do produto.
+
+### Recursos incluídos no MVP
+
+- cadastro manual completo de receitas;
+- consulta, edição e exclusão de receitas;
+- ingredientes, modo de preparo, porções, tempo, tags e história/origem;
+- upload, preservação e substituição de imagem;
+- importação por texto, imagem, print ou transcrição manual;
+- organização assistida de ingredientes e modo de preparo;
+- tela de revisão antes de salvar uma receita importada;
+- preservação do texto e da imagem originais;
+- lista de compras gerada a partir de uma ou mais receitas;
+- edição, marcação, remoção e exclusão de listas de compras;
+- carrossel na tela inicial com miniaturas e acesso rápido às receitas;
+- execução local com SQLite, sem APIs externas obrigatórias.
+
+## Como a IA Acelerou Este Projeto
+
+A IA foi utilizada como ferramenta de apoio ao desenvolvimento, acelerando
+atividades de exploração, estruturação e revisão sem substituir as decisões
+de produto ou a validação humana. O assistente de código utilizado foi o
+**OpenAI Codex**, empregado para apoiar a leitura dos requisitos, a organização
+incremental das etapas, a criação de código, a elaboração de testes, a
+revisão de documentação e a investigação de regressões.
+
+Os principais ganhos de produtividade foram:
+
+- transformar o Prompt Mestre e os prompts incrementais em tarefas menores e
+  rastreáveis;
+- acelerar a criação da estrutura inicial e das camadas da aplicação;
+- sugerir modelos, schemas, serviços, rotas e templates coerentes com a
+  arquitetura aprovada;
+- ampliar a cobertura de testes dos fluxos críticos;
+- identificar problemas em uploads, exclusões, substituição de imagens e
+  exclusão de listas de compras;
+- manter README, diagramas, documentação de segurança e estratégia de testes
+  alinhados ao estado implementado;
+- produzir exemplos de execução, mensagens de commit e documentação de
+  submissão com mais consistência.
+
+No produto, a IA ainda não é uma dependência obrigatória. A aplicação utiliza
+providers locais determinísticos, mocks e regras para simular OCR e análise de
+receitas. Essa separação permitiu validar a experiência de importação sem
+exigir chaves, APIs externas ou modelos reais antes de confirmar o valor do
+fluxo.
+
+A **revisão humana foi indispensável**. Cada sugestão gerada durante o
+desenvolvimento foi confrontada com o escopo do MVP, o `AGENTS.md`, a
+arquitetura aprovada, os testes e o comportamento observado na aplicação. Na
+importação de receitas, a mesma premissa aparece para o usuário final: a
+estruturação automática pode errar, por isso o texto e a imagem originais são
+preservados e os dados extraídos passam por uma tela de revisão antes de serem
+salvos. A IA acelerou o trabalho, mas as decisões finais, a aceitação das
+alterações e a validação dos fluxos permaneceram sob responsabilidade humana.
+
 ## Documentação arquitetural
 
 - [Arquitetura aprovada](docs/ARCHITECTURE.md): decisões, camadas, modelo de

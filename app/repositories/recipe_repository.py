@@ -10,7 +10,11 @@ def list_recipes(db: Session, user: User) -> list[Recipe]:
     statement = (
         select(Recipe)
         .where(Recipe.user_id == user.id)
-        .options(selectinload(Recipe.ingredients), selectinload(Recipe.preparation_steps))
+        .options(
+            selectinload(Recipe.images),
+            selectinload(Recipe.ingredients),
+            selectinload(Recipe.preparation_steps),
+        )
         .order_by(Recipe.updated_at.desc())
     )
     return list(db.scalars(statement).unique().all())
