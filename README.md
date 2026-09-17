@@ -22,6 +22,19 @@ ingredientes, preparo, tags, história/origem e imagem opcional.
 - `pip` atualizado;
 - nenhum serviço externo, Docker ou chave de API.
 
+## Tecnologias, modelos e assistentes
+
+- Python 3.14, FastAPI, Uvicorn, SQLAlchemy, SQLite e Pydantic v2;
+- Jinja2 para templates e Tailwind CSS via CDN para a interface;
+- pytest e TestClient para os testes automatizados;
+- `MockOCRProvider`, `ManualTranscriptionOCRProvider`,
+  `RuleBasedRecipeParser` e `MockLLMRecipeParser` como providers locais e
+  determinísticos;
+- não há modelo de IA ou serviço de OCR externo obrigatório no MVP;
+- assistente de código utilizado no desenvolvimento: OpenAI Codex. Ele não é
+  dependência de execução e não é necessário para instalar ou utilizar a
+  aplicação.
+
 ## Instalação
 
 ### Windows PowerShell
@@ -212,6 +225,12 @@ upload inválido não deixa uma receita parcial. Ao excluir uma receita, a image
 e os jobs de importação associados são removidos, enquanto itens de listas de
 compras mantêm seu conteúdo e deixam de apontar para a receita excluída.
 
+## Créditos e licença
+
+O projeto foi desenvolvido por Thiago Sousa Cherubino com apoio do OpenAI
+Codex como assistente de desenvolvimento. A aplicação é distribuída sob a
+licença MIT; consulte o arquivo [LICENSE](LICENSE).
+
 ## Testes
 
 ```bash
@@ -253,6 +272,6 @@ autorização.
 - a importação usa somente providers locais mockados ou baseados em regras;
 - não há OCR ou IA real;
 - não há autenticação real;
-  - a lista de compras não realiza conversões complexas de unidades;
+- a lista de compras não realiza conversões complexas de unidades;
 - Tailwind é carregado via CDN e, portanto, requer rede apenas para os estilos
   no navegador; a aplicação e o banco continuam locais.
