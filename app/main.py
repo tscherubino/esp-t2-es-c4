@@ -3,11 +3,13 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.session import initialize_database
+from app.db.session import get_db, initialize_database
+from app.repositories.recipe_repository import get_demo_user, list_recipes
 from app.routers import imports, recipes, shopping
 
 
@@ -35,13 +37,15 @@ app.include_router(shopping.router)
 
 
 @app.get("/", include_in_schema=False)
-def index(request: Request):
+def index(request: Request, db: Session = Depends(get_db)):
     """Renderiza a página inicial mínima do MVP."""
+
+    recipes = list_recipes(db, get_demo_user(db))
 
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"app_name": settings.app_name},
+        context={"app_name": settings.app_name, "recipes": recipes},
     )
 
 

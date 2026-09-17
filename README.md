@@ -51,6 +51,7 @@ O roadmap previsto é:
 - preservação do texto e da imagem originais;
 - lista de compras gerada a partir de uma ou mais receitas;
 - edição, marcação, remoção e exclusão de listas de compras;
+- carrossel na tela inicial com miniaturas e acesso rápido às receitas;
 - execução local com SQLite, sem APIs externas obrigatórias.
 
 ## Como a IA Acelerou Este Projeto

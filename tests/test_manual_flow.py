@@ -34,6 +34,10 @@ def test_manual_recipe_flow_end_to_end() -> None:
         assert created.status_code == 303
         public_id = created.headers["location"].rsplit("/", 1)[-1]
 
+        recipe_list = client.get("/recipes")
+        assert recipe_list.status_code == 200
+        assert f"/recipes/{public_id}/images/" in recipe_list.text
+
         detail = client.get(f"/recipes/{public_id}")
         assert detail.status_code == 200
         assert "Bolo de teste ponta a ponta" in detail.text

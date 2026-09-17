@@ -3,16 +3,52 @@
 {% block title %}Início — {{ app_name }}{% endblock %}
 
 {% block content %}
-  <section class="overflow-hidden rounded-2xl bg-stone-900 px-6 py-10 text-white shadow-sm sm:px-10 sm:py-14">
+  <section class="overflow-hidden rounded-2xl bg-stone-900 px-6 py-6 text-white shadow-sm sm:px-10 sm:py-8">
     <p class="mb-3 text-sm font-medium uppercase tracking-widest text-amber-300">Seu acervo de sabores</p>
     <h1 class="max-w-2xl text-3xl font-bold tracking-tight sm:text-5xl">Receitas que guardam uma história.</h1>
     <p class="mt-5 max-w-xl text-base leading-7 text-stone-300">Organize receitas pessoais e de família em um só lugar, com a imagem original e as memórias preservadas.</p>
     <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-      <a class="rounded-lg bg-amber-500 px-5 py-3 text-center font-semibold text-stone-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300" href="/recipes/new">Cadastrar receita</a>
+      <a class="rounded-lg bg-amber-500 px-5 py-3 text-center font-semibold text-stone-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300" href="/recipes">Minhas receitas</a>
+      <a class="rounded-lg border border-stone-600 px-5 py-3 text-center font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300" href="/recipes/new">Cadastrar receita</a>
       <a class="rounded-lg border border-stone-600 px-5 py-3 text-center font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300" href="/recipes/import">Importar foto ou texto</a>
     </div>
   </section>
-  <section class="mt-8 grid gap-4 sm:grid-cols-3" aria-label="Como começar">
+  {% if recipes %}
+    <section class="mt-6" aria-labelledby="recipes-carousel-heading">
+      <div class="mb-4 flex items-center justify-between gap-4">
+        <div><h2 id="recipes-carousel-heading" class="mt-1 text-2xl font-bold">Minhas receitas</h2></div>
+        <div class="flex gap-2">
+          <button class="rounded-full border border-stone-300 bg-white px-3 py-2 text-lg leading-none hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" type="button" aria-label="Ver receitas anteriores" onclick="document.getElementById('recipes-carousel').scrollBy({left: -300, behavior: 'smooth'})">‹</button>
+          <button class="rounded-full border border-stone-300 bg-white px-3 py-2 text-lg leading-none hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" type="button" aria-label="Ver próximas receitas" onclick="document.getElementById('recipes-carousel').scrollBy({left: 300, behavior: 'smooth'})">›</button>
+        </div>
+      </div>
+      <div id="recipes-carousel" class="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2" tabindex="0" aria-label="Receitas cadastradas">
+        {% for recipe in recipes %}
+          <article class="min-w-[min(68vw,14rem)] snap-start overflow-hidden rounded-xl bg-white shadow-sm sm:min-w-48">
+            <a class="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" href="/recipes/{{ recipe.public_id }}">
+              {% if recipe.images %}
+                <img class="h-24 w-full object-cover" src="/recipes/{{ recipe.public_id }}/images/{{ recipe.images[0].public_id }}" alt="Imagem da receita {{ recipe.title }}" loading="lazy">
+              {% else %}
+                <div class="flex h-24 items-center justify-center bg-amber-100 px-4 text-center text-sm font-medium text-amber-900">Receita sem imagem</div>
+              {% endif %}
+              <div class="p-3"><h3 class="font-semibold text-stone-900">{{ recipe.title }}</h3></div>
+            </a>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% else %}
+    <section class="mt-8 rounded-xl border border-dashed border-stone-300 bg-white p-6 text-center" aria-labelledby="empty-recipes-heading">
+      <h2 id="empty-recipes-heading" class="text-xl font-semibold">Seu acervo começa aqui</h2>
+      <p class="mt-2 text-stone-600">Cadastre uma receita para vê-la nesta tela.</p>
+      <a class="mt-4 inline-block rounded-lg bg-amber-700 px-4 py-2 font-semibold text-white hover:bg-amber-800" href="/recipes/new">Cadastrar receita</a>
+    </section>
+  {% endif %}
+  <style>
+    #recipes-carousel { scrollbar-width: none; -ms-overflow-style: none; }
+    #recipes-carousel::-webkit-scrollbar { display: none; }
+  </style>
+  <section class="mt-8 grid gap-4 sm:grid-cols-3" aria-label="Como começa">
     <article class="rounded-xl bg-white p-5 shadow-sm"><p class="text-sm font-semibold text-amber-700">01 · Guarde</p><h2 class="mt-2 font-semibold">Traga suas receitas</h2><p class="mt-2 text-sm leading-6 text-stone-600">Digite uma receita ou importe uma foto, print ou texto.</p></article>
     <article class="rounded-xl bg-white p-5 shadow-sm"><p class="text-sm font-semibold text-amber-700">02 · Revise</p><h2 class="mt-2 font-semibold">Confira cada detalhe</h2><p class="mt-2 text-sm leading-6 text-stone-600">A organização automática é uma sugestão: você decide o que salvar.</p></article>
     <article class="rounded-xl bg-white p-5 shadow-sm"><p class="text-sm font-semibold text-amber-700">03 · Cozinhe</p><h2 class="mt-2 font-semibold">Consulte quando quiser</h2><p class="mt-2 text-sm leading-6 text-stone-600">Encontre o preparo e monte uma lista de compras simples.</p></article>
