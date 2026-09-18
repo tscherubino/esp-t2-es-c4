@@ -1,7 +1,7 @@
 """Rotas web e JSON para o fluxo manual de receitas."""
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, RedirectResponse
@@ -57,10 +57,10 @@ def new_recipe(request: Request):
 async def create_manual_recipe(
     request: Request,
     title: Annotated[str, Form()],
-    servings: Annotated[Optional[int], Form()] = None,
-    prep_time_minutes: Annotated[Optional[int], Form()] = None,
-    origin_story: Annotated[Optional[str], Form()] = None,
-    original_text: Annotated[Optional[str], Form()] = None,
+    servings: Annotated[int | None, Form()] = None,
+    prep_time_minutes: Annotated[int | None, Form()] = None,
+    origin_story: Annotated[str | None, Form()] = None,
+    original_text: Annotated[str | None, Form()] = None,
     ingredient_descriptions: Annotated[list[str], Form()] = [],
     ingredient_quantities: Annotated[list[str], Form()] = [],
     ingredient_units: Annotated[list[str], Form()] = [],
@@ -149,10 +149,10 @@ async def update_manual_recipe(
     public_id: str,
     request: Request,
     title: Annotated[str, Form()],
-    servings: Annotated[Optional[int], Form()] = None,
-    prep_time_minutes: Annotated[Optional[int], Form()] = None,
-    origin_story: Annotated[Optional[str], Form()] = None,
-    original_text: Annotated[Optional[str], Form()] = None,
+    servings: Annotated[int | None, Form()] = None,
+    prep_time_minutes: Annotated[int | None, Form()] = None,
+    origin_story: Annotated[str | None, Form()] = None,
+    original_text: Annotated[str | None, Form()] = None,
     ingredient_descriptions: Annotated[list[str], Form()] = [],
     ingredient_quantities: Annotated[list[str], Form()] = [],
     ingredient_units: Annotated[list[str], Form()] = [],
