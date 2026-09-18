@@ -29,6 +29,7 @@ from app.services.shopping_service import (
 
 router = APIRouter(tags=["shopping-list"])
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
+DB_DEPENDENCY = Depends(get_db)
 
 
 def page_context(request: Request, **values: object) -> dict[str, object]:
@@ -50,7 +51,7 @@ def render_page(request: Request, db: Session, user, selected_list=None, error: 
 
 
 @router.get("/shopping-list")
-def shopping_list(request: Request, list_id: str | None = None, db: Session = Depends(get_db)):
+def shopping_list(request: Request, list_id: str | None = None, db: Session = DB_DEPENDENCY):
     """Exibe a lista de compras e seleciona uma lista pelo identificador opcional."""
     user = get_demo_user(db)
     selected = get_shopping_list(db, list_id, user) if list_id else None
@@ -62,7 +63,7 @@ def generate_shopping_list(
     request: Request,
     recipe_ids: Annotated[list[str] | None, Form()] = None,
     name: Annotated[str, Form()] = "Lista de compras",
-    db: Session = Depends(get_db),
+    db: Session = DB_DEPENDENCY,
 ):
     """Gera uma lista a partir das receitas selecionadas."""
     user = get_demo_user(db)
@@ -76,7 +77,7 @@ def generate_shopping_list(
 
 
 @router.post("/shopping-list/{list_public_id}/delete")
-def delete_shopping_list_route(list_public_id: str, db: Session = Depends(get_db)):
+def delete_shopping_list_route(list_public_id: str, db: Session = DB_DEPENDENCY):
     """Exclui uma lista pertencente ao usuário e seus itens em cascata."""
     user = get_demo_user(db)
     shopping_list = get_shopping_list(db, list_public_id, user)
@@ -87,7 +88,7 @@ def delete_shopping_list_route(list_public_id: str, db: Session = Depends(get_db
 
 
 @router.post("/shopping-list/{list_public_id}/items")
-def create_shopping_item(list_public_id: str, request: Request, description: Annotated[str, Form()], quantity: Annotated[str | None, Form()] = None, unit: Annotated[str | None, Form()] = None, notes: Annotated[str | None, Form()] = None, db: Session = Depends(get_db)):
+def create_shopping_item(list_public_id: str, request: Request, description: Annotated[str, Form()], quantity: Annotated[str | None, Form()] = None, unit: Annotated[str | None, Form()] = None, notes: Annotated[str | None, Form()] = None, db: Session = DB_DEPENDENCY):
     """Adiciona um item manual à lista autorizada."""
     user = get_demo_user(db)
     shopping_list = get_shopping_list(db, list_public_id, user)
@@ -101,7 +102,7 @@ def create_shopping_item(list_public_id: str, request: Request, description: Ann
 
 
 @router.post("/shopping-list/{list_public_id}/items/{item_public_id}/edit")
-def edit_shopping_item(list_public_id: str, item_public_id: str, request: Request, description: Annotated[str, Form()], quantity: Annotated[str | None, Form()] = None, unit: Annotated[str | None, Form()] = None, notes: Annotated[str | None, Form()] = None, db: Session = Depends(get_db)):
+def edit_shopping_item(list_public_id: str, item_public_id: str, request: Request, description: Annotated[str, Form()], quantity: Annotated[str | None, Form()] = None, unit: Annotated[str | None, Form()] = None, notes: Annotated[str | None, Form()] = None, db: Session = DB_DEPENDENCY):
     """Edita um item pertencente à lista autorizada."""
     user = get_demo_user(db)
     shopping_list = get_shopping_list(db, list_public_id, user)
@@ -118,7 +119,7 @@ def edit_shopping_item(list_public_id: str, item_public_id: str, request: Reques
 
 
 @router.post("/shopping-list/{list_public_id}/items/{item_public_id}/toggle")
-def toggle_shopping_item(list_public_id: str, item_public_id: str, db: Session = Depends(get_db)):
+def toggle_shopping_item(list_public_id: str, item_public_id: str, db: Session = DB_DEPENDENCY):
     """Alterna o estado de compra de um item autorizado."""
     user = get_demo_user(db)
     shopping_list = get_shopping_list(db, list_public_id, user)
@@ -132,7 +133,7 @@ def toggle_shopping_item(list_public_id: str, item_public_id: str, db: Session =
 
 
 @router.post("/shopping-list/{list_public_id}/items/{item_public_id}/delete")
-def delete_shopping_item(list_public_id: str, item_public_id: str, db: Session = Depends(get_db)):
+def delete_shopping_item(list_public_id: str, item_public_id: str, db: Session = DB_DEPENDENCY):
     """Remove um item pertencente à lista autorizada."""
     user = get_demo_user(db)
     shopping_list = get_shopping_list(db, list_public_id, user)
@@ -146,7 +147,7 @@ def delete_shopping_item(list_public_id: str, item_public_id: str, db: Session =
 
 
 @router.get("/shopping-list/{list_public_id}/text", response_class=PlainTextResponse)
-def shopping_list_as_text(list_public_id: str, db: Session = Depends(get_db)):
+def shopping_list_as_text(list_public_id: str, db: Session = DB_DEPENDENCY):
     """Retorna uma lista autorizada em formato textual simples."""
     shopping_list = get_shopping_list(db, list_public_id, get_demo_user(db))
     if shopping_list is None:

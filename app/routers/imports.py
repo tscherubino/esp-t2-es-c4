@@ -21,6 +21,7 @@ from app.services.import_service import RecipeImportService
 router = APIRouter(prefix="/recipes/import", tags=["imports"])
 api_router = APIRouter(prefix="/api/recipes/import", tags=["imports-api"])
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
+DB_DEPENDENCY = Depends(get_db)
 
 
 def context(request: Request, **values: object) -> dict[str, object]:
@@ -43,7 +44,7 @@ async def analyze_import(
     original_text: Annotated[str | None, Form()] = None,
     manual_transcription: Annotated[str | None, Form()] = None,
     image: UploadFile | None = None,
-    db: Session = Depends(get_db),
+    db: Session = DB_DEPENDENCY,
 ):
     """Recebe uma fonte, cria o job local e redireciona para a revisão humana."""
     try:
@@ -64,7 +65,7 @@ router.add_api_route("", analyze_import, methods=["POST"])
 
 
 @router.get("/{job_public_id}/review")
-def review_import(job_public_id: str, request: Request, db: Session = Depends(get_db)):
+def review_import(job_public_id: str, request: Request, db: Session = DB_DEPENDENCY):
     """Exibe os dados estruturados de um job antes da persistência definitiva."""
     job = RecipeImportService().get_job(db, job_public_id, get_demo_user(db))
     if job is None:
@@ -94,7 +95,7 @@ def finalize_import(
     ingredient_units: Annotated[list[str] | None, Form()] = None,
     preparation_steps: Annotated[list[str] | None, Form()] = None,
     tags: Annotated[list[str] | None, Form()] = None,
-    db: Session = Depends(get_db),
+    db: Session = DB_DEPENDENCY,
 ):
     """Valida a revisão humana e transforma o job concluído em uma receita."""
     service = RecipeImportService()
@@ -132,7 +133,7 @@ async def analyze_import_json(
     original_text: Annotated[str | None, Form()] = None,
     manual_transcription: Annotated[str | None, Form()] = None,
     image: UploadFile | None = None,
-    db: Session = Depends(get_db),
+    db: Session = DB_DEPENDENCY,
 ) -> ImportAnalysisResponse:
     """Executa a análise local pela API e devolve o resultado estruturado."""
     try:

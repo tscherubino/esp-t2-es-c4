@@ -16,6 +16,7 @@ APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=APP_DIR / "templates")
 
 settings.uploads_dir.mkdir(parents=True, exist_ok=True)
+DB_DEPENDENCY = Depends(get_db)
 (settings.uploads_dir.parent / "data").mkdir(parents=True, exist_ok=True)
 
 
@@ -35,7 +36,7 @@ app.include_router(shopping.router)
 
 
 @app.get("/", include_in_schema=False)
-def index(request: Request, db: Session = Depends(get_db)):
+def index(request: Request, db: Session = DB_DEPENDENCY):
     """Renderiza a página inicial mínima do MVP."""
     recipes = list_recipes(db, get_demo_user(db))
 

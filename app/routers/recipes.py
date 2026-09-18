@@ -24,6 +24,7 @@ from app.services.storage import delete_image, save_image
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 api_router = APIRouter(prefix="/api/recipes", tags=["recipes-api"])
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
+DB_DEPENDENCY = Depends(get_db)
 
 
 def to_recipe_input(data: RecipeManualInput) -> RecipeInput:
@@ -37,7 +38,7 @@ def recipe_context(request: Request, **values: object) -> dict[str, object]:
 
 
 @router.get("")
-def recipe_list(request: Request, db: Session = Depends(get_db)):
+def recipe_list(request: Request, db: Session = DB_DEPENDENCY):
     """Renderiza a listagem de receitas do usuário local."""
     user = get_demo_user(db)
     return templates.TemplateResponse(
@@ -71,7 +72,7 @@ async def create_manual_recipe(
     step_instructions: Annotated[list[str] | None, Form()] = None,
     tags: Annotated[list[str] | None, Form()] = None,
     image: UploadFile | None = None,
-    db: Session = Depends(get_db),
+    db: Session = DB_DEPENDENCY,
 ):
     """Recebe e persiste uma receita manual, incluindo imagem opcional."""
     stored_image: tuple[str, str, str] | None = None
@@ -123,7 +124,7 @@ async def create_manual_recipe(
 
 
 @router.get("/{public_id}")
-def recipe_detail(public_id: str, request: Request, db: Session = Depends(get_db)):
+def recipe_detail(public_id: str, request: Request, db: Session = DB_DEPENDENCY):
     """Renderiza os detalhes de uma receita autorizada."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
@@ -136,7 +137,7 @@ def recipe_detail(public_id: str, request: Request, db: Session = Depends(get_db
 
 
 @router.get("/{public_id}/edit")
-def edit_recipe(public_id: str, request: Request, db: Session = Depends(get_db)):
+def edit_recipe(public_id: str, request: Request, db: Session = DB_DEPENDENCY):
     """Renderiza o formulário preenchido para edição de uma receita."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
@@ -163,7 +164,7 @@ async def update_manual_recipe(
     step_instructions: Annotated[list[str] | None, Form()] = None,
     tags: Annotated[list[str] | None, Form()] = None,
     image: UploadFile | None = None,
-    db: Session = Depends(get_db),
+    db: Session = DB_DEPENDENCY,
 ):
     """Atualiza uma receita manual e substitui sua imagem quando enviada."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
@@ -218,7 +219,7 @@ async def update_manual_recipe(
 
 
 @router.post("/{public_id}/delete")
-def remove_recipe(public_id: str, db: Session = Depends(get_db)):
+def remove_recipe(public_id: str, db: Session = DB_DEPENDENCY):
     """Exclui uma receita autorizada e redireciona para a listagem."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
@@ -228,7 +229,7 @@ def remove_recipe(public_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/{public_id}/images/{image_public_id}")
-def recipe_image(public_id: str, image_public_id: str, db: Session = Depends(get_db)):
+def recipe_image(public_id: str, image_public_id: str, db: Session = DB_DEPENDENCY):
     """Entrega uma imagem somente após validar receita, arquivo e diretório local."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
@@ -243,7 +244,7 @@ def recipe_image(public_id: str, image_public_id: str, db: Session = Depends(get
 
 
 @api_router.get("")
-def recipe_list_json(db: Session = Depends(get_db)) -> list[dict[str, object]]:
+def recipe_list_json(db: Session = DB_DEPENDENCY) -> list[dict[str, object]]:
     """Retorna a listagem resumida de receitas em JSON."""
     user = get_demo_user(db)
     return [
@@ -253,7 +254,7 @@ def recipe_list_json(db: Session = Depends(get_db)) -> list[dict[str, object]]:
 
 
 @api_router.get("/{public_id}")
-def recipe_detail_json(public_id: str, db: Session = Depends(get_db)) -> dict[str, object]:
+def recipe_detail_json(public_id: str, db: Session = DB_DEPENDENCY) -> dict[str, object]:
     """Retorna uma receita autorizada e seus componentes em JSON."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
