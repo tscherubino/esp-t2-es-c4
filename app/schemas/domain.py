@@ -1,8 +1,6 @@
 """Schemas Pydantic v2 correspondentes às entidades do MVP."""
 
 from datetime import datetime
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -25,7 +23,7 @@ class UserCreate(SchemaBase):
 
 class UserUpdate(SchemaBase):
     """Entrada parcial para atualização de usuário."""
-    name: Optional[str] = Field(default=None, min_length=1, max_length=120)
+    name: str | None = Field(default=None, min_length=1, max_length=120)
 
 
 class UserRead(TimestampSchema):
@@ -36,30 +34,30 @@ class UserRead(TimestampSchema):
 class RecipeCreate(SchemaBase):
     """Entrada de API para criação de receita."""
     title: str = Field(min_length=1, max_length=200)
-    servings: Optional[int] = Field(default=None, ge=1)
-    prep_time_minutes: Optional[int] = Field(default=None, ge=0)
-    original_text: Optional[str] = None
-    origin_story: Optional[str] = None
+    servings: int | None = Field(default=None, ge=1)
+    prep_time_minutes: int | None = Field(default=None, ge=0)
+    original_text: str | None = None
+    origin_story: str | None = None
     user_public_id: str
 
 
 class RecipeUpdate(SchemaBase):
     """Entrada de API para atualização parcial de receita."""
-    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    servings: Optional[int] = Field(default=None, ge=1)
-    prep_time_minutes: Optional[int] = Field(default=None, ge=0)
-    original_text: Optional[str] = None
-    origin_story: Optional[str] = None
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    servings: int | None = Field(default=None, ge=1)
+    prep_time_minutes: int | None = Field(default=None, ge=0)
+    original_text: str | None = None
+    origin_story: str | None = None
 
 
 class RecipeManualInput(SchemaBase):
     """Entrada já validada para criação/edição pelo formulário manual."""
 
     title: str = Field(min_length=1, max_length=200)
-    servings: Optional[int] = Field(default=None, ge=1)
-    prep_time_minutes: Optional[int] = Field(default=None, ge=0)
-    original_text: Optional[str] = None
-    origin_story: Optional[str] = None
+    servings: int | None = Field(default=None, ge=1)
+    prep_time_minutes: int | None = Field(default=None, ge=0)
+    original_text: str | None = None
+    origin_story: str | None = None
     ingredient_descriptions: list[str] = Field(default_factory=list)
     ingredient_quantities: list[str] = Field(default_factory=list)
     ingredient_units: list[str] = Field(default_factory=list)
@@ -70,10 +68,10 @@ class RecipeManualInput(SchemaBase):
 class RecipeRead(TimestampSchema):
     """Representação de leitura de receita."""
     title: str
-    servings: Optional[int]
-    prep_time_minutes: Optional[int]
-    original_text: Optional[str]
-    origin_story: Optional[str]
+    servings: int | None
+    prep_time_minutes: int | None
+    original_text: str | None
+    origin_story: str | None
     user_id: int
 
 
@@ -97,28 +95,28 @@ class RecipeImageRead(TimestampSchema):
 class IngredientCreate(SchemaBase):
     """Entrada para criação de ingrediente."""
     description: str = Field(min_length=1, max_length=255)
-    quantity: Optional[str] = Field(default=None, max_length=50)
-    unit: Optional[str] = Field(default=None, max_length=50)
-    notes: Optional[str] = Field(default=None, max_length=255)
+    quantity: str | None = Field(default=None, max_length=50)
+    unit: str | None = Field(default=None, max_length=50)
+    notes: str | None = Field(default=None, max_length=255)
     position: int = Field(default=0, ge=0)
 
 
 class IngredientUpdate(SchemaBase):
     """Entrada parcial para atualização de ingrediente."""
-    description: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    quantity: Optional[str] = Field(default=None, max_length=50)
-    unit: Optional[str] = Field(default=None, max_length=50)
-    notes: Optional[str] = Field(default=None, max_length=255)
-    position: Optional[int] = Field(default=None, ge=0)
+    description: str | None = Field(default=None, min_length=1, max_length=255)
+    quantity: str | None = Field(default=None, max_length=50)
+    unit: str | None = Field(default=None, max_length=50)
+    notes: str | None = Field(default=None, max_length=255)
+    position: int | None = Field(default=None, ge=0)
 
 
 class IngredientRead(TimestampSchema):
     """Representação de leitura de ingrediente."""
     recipe_id: int
     description: str
-    quantity: Optional[str]
-    unit: Optional[str]
-    notes: Optional[str]
+    quantity: str | None
+    unit: str | None
+    notes: str | None
     position: int
 
 
@@ -130,8 +128,8 @@ class PreparationStepCreate(SchemaBase):
 
 class PreparationStepUpdate(SchemaBase):
     """Entrada parcial para atualização de uma etapa."""
-    position: Optional[int] = Field(default=None, ge=0)
-    instruction: Optional[str] = Field(default=None, min_length=1)
+    position: int | None = Field(default=None, ge=0)
+    instruction: str | None = Field(default=None, min_length=1)
 
 
 class PreparationStepRead(TimestampSchema):
@@ -149,7 +147,7 @@ class TagCreate(SchemaBase):
 
 class TagUpdate(SchemaBase):
     """Entrada parcial para atualização de tag."""
-    name: Optional[str] = Field(default=None, min_length=1, max_length=80)
+    name: str | None = Field(default=None, min_length=1, max_length=80)
 
 
 class TagRead(TimestampSchema):
@@ -178,7 +176,7 @@ class ShoppingListCreate(SchemaBase):
 
 class ShoppingListUpdate(SchemaBase):
     """Entrada parcial para atualização de lista de compras."""
-    name: Optional[str] = Field(default=None, min_length=1, max_length=150)
+    name: str | None = Field(default=None, min_length=1, max_length=150)
 
 
 class ShoppingListRead(TimestampSchema):
@@ -190,31 +188,31 @@ class ShoppingListRead(TimestampSchema):
 class ShoppingListItemCreate(SchemaBase):
     """Entrada para criação de item de compras."""
     description: str = Field(min_length=1, max_length=255)
-    quantity: Optional[str] = Field(default=None, max_length=50)
-    unit: Optional[str] = Field(default=None, max_length=50)
-    notes: Optional[str] = Field(default=None, max_length=255)
-    recipe_id: Optional[int] = None
+    quantity: str | None = Field(default=None, max_length=50)
+    unit: str | None = Field(default=None, max_length=50)
+    notes: str | None = Field(default=None, max_length=255)
+    recipe_id: int | None = None
     is_checked: bool = False
 
 
 class ShoppingListItemUpdate(SchemaBase):
     """Entrada parcial para atualização de item de compras."""
-    description: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    quantity: Optional[str] = Field(default=None, max_length=50)
-    unit: Optional[str] = Field(default=None, max_length=50)
-    notes: Optional[str] = Field(default=None, max_length=255)
-    recipe_id: Optional[int] = None
-    is_checked: Optional[bool] = None
+    description: str | None = Field(default=None, min_length=1, max_length=255)
+    quantity: str | None = Field(default=None, max_length=50)
+    unit: str | None = Field(default=None, max_length=50)
+    notes: str | None = Field(default=None, max_length=255)
+    recipe_id: int | None = None
+    is_checked: bool | None = None
 
 
 class ShoppingListItemRead(TimestampSchema):
     """Representação de leitura de item de compras."""
     shopping_list_id: int
-    recipe_id: Optional[int]
+    recipe_id: int | None
     description: str
-    quantity: Optional[str]
-    unit: Optional[str]
-    notes: Optional[str]
+    quantity: str | None
+    unit: str | None
+    notes: str | None
     is_checked: bool
 
 
@@ -222,24 +220,24 @@ class ImportJobCreate(SchemaBase):
     """Entrada para criação de job de importação."""
     source_type: str = Field(min_length=1, max_length=30)
     user_public_id: str
-    recipe_id: Optional[int] = None
-    original_text: Optional[str] = None
+    recipe_id: int | None = None
+    original_text: str | None = None
 
 
 class ImportJobUpdate(SchemaBase):
     """Entrada parcial para atualização de job de importação."""
-    status: Optional[str] = Field(default=None, pattern="^(pending|processing|completed|failed)$")
-    recipe_id: Optional[int] = None
-    error_message: Optional[str] = None
+    status: str | None = Field(default=None, pattern="^(pending|processing|completed|failed)$")
+    recipe_id: int | None = None
+    error_message: str | None = None
 
 
 class ImportJobRead(TimestampSchema):
     """Representação de leitura de job de importação."""
     user_id: int
-    recipe_id: Optional[int]
+    recipe_id: int | None
     source_type: str
     status: str
-    original_text: Optional[str]
-    extracted_text: Optional[str]
-    structured_payload: Optional[str]
-    error_message: Optional[str]
+    original_text: str | None
+    extracted_text: str | None
+    structured_payload: str | None
+    error_message: str | None
