@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class IngredientSuggestion(BaseModel):
     """Sugestão estruturada de um ingrediente com confiança."""
+
     name: str = Field(min_length=1)
     quantity: str | None = None
     unit: str | None = None
@@ -14,6 +15,7 @@ class IngredientSuggestion(BaseModel):
 
 class PreparationStepSuggestion(BaseModel):
     """Sugestão estruturada de uma etapa de preparo com confiança."""
+
     step_number: int = Field(ge=1)
     description: str = Field(min_length=1)
     confidence_score: float = Field(ge=0, le=1)
@@ -21,6 +23,7 @@ class PreparationStepSuggestion(BaseModel):
 
 class StructuredRecipe(BaseModel):
     """Resultado editável da análise automática de uma receita."""
+
     model_config = ConfigDict(extra="forbid")
 
     title: str = Field(min_length=1, max_length=200)
@@ -34,6 +37,7 @@ class StructuredRecipe(BaseModel):
 
 class ImportAnalysisResponse(BaseModel):
     """Resposta da API para uma análise de importação pendente de revisão."""
+
     import_job_public_id: str
     source_text: str
     structured_recipe: StructuredRecipe
@@ -42,6 +46,7 @@ class ImportAnalysisResponse(BaseModel):
 
 class ImportReviewInput(BaseModel):
     """Dados revisados pelo usuário antes da criação da receita definitiva."""
+
     title: str = Field(min_length=1, max_length=200)
     servings: int | None = Field(default=None, ge=1)
     prep_time_minutes: int | None = Field(default=None, ge=0)

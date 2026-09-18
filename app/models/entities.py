@@ -11,12 +11,12 @@ from app.db.base import Base
 
 def new_public_id() -> str:
     """Gera o UUID textual exposto pela aplicação."""
-
     return str(uuid4())
 
 
 class TimestampMixin:
     """Fornece timestamps UTC de criação e atualização às entidades."""
+
     created_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(UTC), nullable=False
     )
@@ -27,6 +27,7 @@ class TimestampMixin:
 
 class PublicIdMixin:
     """Fornece chave interna e identificador público baseado em UUID."""
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     public_id: Mapped[str] = mapped_column(
         String(36), unique=True, index=True, default=new_public_id, nullable=False
@@ -35,6 +36,7 @@ class PublicIdMixin:
 
 class User(PublicIdMixin, TimestampMixin, Base):
     """Usuário local proprietário das receitas e listas do MVP."""
+
     __tablename__ = "users"
 
     name: Mapped[str] = mapped_column(String(120), nullable=False)
@@ -47,6 +49,7 @@ class User(PublicIdMixin, TimestampMixin, Base):
 
 class Recipe(PublicIdMixin, TimestampMixin, Base):
     """Receita persistida com conteúdo original e componentes editáveis."""
+
     __tablename__ = "recipes"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
@@ -75,6 +78,7 @@ class Recipe(PublicIdMixin, TimestampMixin, Base):
 
 class RecipeImage(PublicIdMixin, TimestampMixin, Base):
     """Metadados de uma imagem original armazenada localmente."""
+
     __tablename__ = "recipe_images"
 
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
@@ -88,6 +92,7 @@ class RecipeImage(PublicIdMixin, TimestampMixin, Base):
 
 class Ingredient(PublicIdMixin, TimestampMixin, Base):
     """Ingrediente de uma receita com quantidade, unidade e posição."""
+
     __tablename__ = "ingredients"
 
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
@@ -102,6 +107,7 @@ class Ingredient(PublicIdMixin, TimestampMixin, Base):
 
 class PreparationStep(PublicIdMixin, TimestampMixin, Base):
     """Etapa ordenada do modo de preparo de uma receita."""
+
     __tablename__ = "preparation_steps"
 
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
@@ -113,6 +119,7 @@ class PreparationStep(PublicIdMixin, TimestampMixin, Base):
 
 class Tag(PublicIdMixin, TimestampMixin, Base):
     """Tag pertencente ao usuário para classificar receitas."""
+
     __tablename__ = "tags"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
@@ -128,6 +135,7 @@ class Tag(PublicIdMixin, TimestampMixin, Base):
 
 class RecipeTag(PublicIdMixin, TimestampMixin, Base):
     """Relação entre uma receita e uma tag."""
+
     __tablename__ = "recipe_tags"
 
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
@@ -141,6 +149,7 @@ class RecipeTag(PublicIdMixin, TimestampMixin, Base):
 
 class ShoppingList(PublicIdMixin, TimestampMixin, Base):
     """Lista de compras derivada de receitas ou criada manualmente."""
+
     __tablename__ = "shopping_lists"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
@@ -154,6 +163,7 @@ class ShoppingList(PublicIdMixin, TimestampMixin, Base):
 
 class ShoppingListItem(PublicIdMixin, TimestampMixin, Base):
     """Item editável de uma lista de compras."""
+
     __tablename__ = "shopping_list_items"
 
     shopping_list_id: Mapped[int] = mapped_column(
@@ -174,6 +184,7 @@ class ShoppingListItem(PublicIdMixin, TimestampMixin, Base):
 
 class ImportJob(PublicIdMixin, TimestampMixin, Base):
     """Registro do processamento local de uma importação assistida."""
+
     __tablename__ = "import_jobs"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)

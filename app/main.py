@@ -23,7 +23,6 @@ settings.uploads_dir.mkdir(parents=True, exist_ok=True)
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Inicializa a estrutura do banco antes de atender requisições."""
-
     initialize_database()
     yield
 
@@ -39,7 +38,6 @@ app.include_router(shopping.router)
 @app.get("/", include_in_schema=False)
 def index(request: Request, db: Session = Depends(get_db)):
     """Renderiza a página inicial mínima do MVP."""
-
     recipes = list_recipes(db, get_demo_user(db))
 
     return templates.TemplateResponse(
@@ -52,5 +50,4 @@ def index(request: Request, db: Session = Depends(get_db)):
 @app.get("/health")
 def health() -> dict[str, str]:
     """Indica que a aplicação está disponível."""
-
     return {"status": "ok"}

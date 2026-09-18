@@ -13,6 +13,7 @@ from app.repositories.recipe_repository import get_recipe
 @dataclass
 class ShoppingItemInput:
     """Dados de um item de compras antes da persistência."""
+
     description: str
     quantity: str | None = None
     unit: str | None = None
@@ -25,7 +26,7 @@ def _normalize(value: str | None) -> str:
 
 
 def _parse_quantity(value: str | None) -> Decimal | None:
-    """Converte quantidades numéricas em Decimal ou retorna None para texto livre."""
+    """Converta quantidades numéricas em Decimal ou retorne None para texto livre."""
     if not value:
         return None
     normalized = value.strip().replace(",", ".")
@@ -42,7 +43,7 @@ def _format_quantity(value: Decimal) -> str:
 
 
 def _ingredient_to_item(ingredient: Ingredient) -> ShoppingItemInput:
-    """Converte uma entidade de ingrediente no formato usado pela lista de compras."""
+    """Converta uma entidade de ingrediente no formato usado pela lista de compras."""
     return ShoppingItemInput(
         description=ingredient.description,
         quantity=ingredient.quantity,
@@ -53,7 +54,6 @@ def _ingredient_to_item(ingredient: Ingredient) -> ShoppingItemInput:
 
 def consolidate_ingredients(ingredients: list[Ingredient]) -> tuple[list[ShoppingItemInput], list[str]]:
     """Consolida nome/unidade iguais sem conversões ou inferências complexas."""
-
     result: list[ShoppingItemInput] = []
     positions: dict[tuple[str, str], int] = {}
     warnings: list[str] = []

@@ -16,7 +16,6 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 def initialize_database() -> None:
     """Cria as tabelas declaradas no SQLite local, caso ainda não existam."""
-
     settings.uploads_dir.parent.joinpath("data").mkdir(parents=True, exist_ok=True)
     # Importa os modelos antes do create_all para registrar todas as tabelas.
     import app.models  # noqa: F401
@@ -29,7 +28,6 @@ def initialize_database() -> None:
 
 def _ensure_recipe_columns() -> None:
     """Adiciona colunas novas simples ao banco local sem exigir Alembic."""
-
     inspector = inspect(engine)
     if "recipes" not in inspector.get_table_names():
         return
@@ -47,7 +45,6 @@ def _ensure_recipe_columns() -> None:
 
 def _ensure_import_columns() -> None:
     """Atualiza o banco local para os metadados de revisão de importações."""
-
     inspector = inspect(engine)
     if "import_jobs" not in inspector.get_table_names():
         return
@@ -69,7 +66,6 @@ def _ensure_import_columns() -> None:
 
 def _ensure_shopping_columns() -> None:
     """Atualiza bancos locais existentes com observações dos itens."""
-
     inspector = inspect(engine)
     if "shopping_list_items" not in inspector.get_table_names():
         return
@@ -82,7 +78,6 @@ def _ensure_shopping_columns() -> None:
 
 def get_db() -> Generator[Session, None, None]:
     """Fornece uma sessão por requisição para os próximos casos de uso."""
-
     db = SessionLocal()
     try:
         yield db

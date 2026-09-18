@@ -51,7 +51,7 @@ class LLMRecipeParser(ABC):
 
     @abstractmethod
     def parse(self, text: str) -> StructuredRecipe:
-        """Converte texto bruto em uma sugestão estruturada de receita."""
+        """Converta texto bruto em uma sugestão estruturada de receita."""
         raise NotImplementedError
 
 
@@ -125,7 +125,7 @@ class RuleBasedRecipeParser(LLMRecipeParser):
 
     @staticmethod
     def _ingredient(line: str) -> IngredientSuggestion:
-        """Converte uma linha de ingrediente em nome, quantidade e unidade sugeridos."""
+        """Converta uma linha de ingrediente em nome, quantidade e unidade sugeridos."""
         match = re.match(r"^(\d+(?:[,.]\d+)?)\s+([\wÀ-ÿ]+)\s+(?:de\s+)?(.+)$", line)
         if match:
             return IngredientSuggestion(

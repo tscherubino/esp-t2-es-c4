@@ -23,7 +23,7 @@ templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "
 
 
 def to_recipe_input(data: RecipeManualInput) -> RecipeInput:
-    """Converte o schema Pydantic do formulário no objeto do serviço de domínio."""
+    """Converta o schema Pydantic do formulário no objeto do serviço de domínio."""
     return RecipeInput(**data.model_dump())
 
 
