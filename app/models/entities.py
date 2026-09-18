@@ -1,7 +1,6 @@
 """Entidades SQLAlchemy do modelo inicial do MVP."""
 
 from datetime import UTC, datetime
-from typing import Optional
 from uuid import uuid4
 
 from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Integer, String, Text, UniqueConstraint
@@ -52,10 +51,10 @@ class Recipe(PublicIdMixin, TimestampMixin, Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    servings: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    prep_time_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    original_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    origin_story: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    servings: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    prep_time_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    original_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    origin_story: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="recipes")
     images: Mapped[list["RecipeImage"]] = relationship(
@@ -93,9 +92,9 @@ class Ingredient(PublicIdMixin, TimestampMixin, Base):
 
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
     description: Mapped[str] = mapped_column(String(255), nullable=False)
-    quantity: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    notes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    quantity: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="ingredients")
@@ -160,17 +159,17 @@ class ShoppingListItem(PublicIdMixin, TimestampMixin, Base):
     shopping_list_id: Mapped[int] = mapped_column(
         ForeignKey("shopping_lists.id"), nullable=False, index=True
     )
-    recipe_id: Mapped[Optional[int]] = mapped_column(
+    recipe_id: Mapped[int | None] = mapped_column(
         ForeignKey("recipes.id"), nullable=True, index=True
     )
     description: Mapped[str] = mapped_column(String(255), nullable=False)
-    quantity: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    unit: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    notes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    quantity: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_checked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     shopping_list: Mapped["ShoppingList"] = relationship(back_populates="items")
-    recipe: Mapped[Optional["Recipe"]] = relationship(back_populates="shopping_list_items")
+    recipe: Mapped[Recipe | None] = relationship(back_populates="shopping_list_items")
 
 
 class ImportJob(PublicIdMixin, TimestampMixin, Base):
@@ -178,22 +177,22 @@ class ImportJob(PublicIdMixin, TimestampMixin, Base):
     __tablename__ = "import_jobs"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
-    recipe_id: Mapped[Optional[int]] = mapped_column(
+    recipe_id: Mapped[int | None] = mapped_column(
         ForeignKey("recipes.id"), nullable=True, index=True
     )
     source_type: Mapped[str] = mapped_column(String(30), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending", index=True)
-    original_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    extracted_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    image_original_filename: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    image_stored_filename: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    image_content_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    image_relative_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    structured_payload: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    original_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    image_original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    image_stored_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    image_content_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    image_relative_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    structured_payload: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="import_jobs")
-    recipe: Mapped[Optional["Recipe"]] = relationship(back_populates="import_jobs")
+    recipe: Mapped[Recipe | None] = relationship(back_populates="import_jobs")
 
     __table_args__ = (
         CheckConstraint(
