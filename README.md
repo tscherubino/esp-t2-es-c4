@@ -111,6 +111,38 @@ alterações e a validação dos fluxos permaneceram sob responsabilidade humana
 - `pip` atualizado;
 - nenhum serviço externo, Docker ou chave de API.
 
+## Comandos Make
+
+O `Makefile` exige o GNU Make instalado. No Windows, uma opção é instalar a
+distribuição `ezwinports.make` pelo WinGet:
+
+```powershell
+winget install --id ezwinports.make --exact
+```
+
+Com o GNU Make instalado, os principais comandos podem ser executados pelos
+targets abaixo:
+
+```bash
+make install
+make run
+make test
+```
+
+O target `install` cria o ambiente virtual com Python 3.14 e instala as
+dependências. `run` inicia o Uvicorn em modo de recarga e `test` executa a
+suíte completa do pytest. No Windows, os targets usam `py -3.14` e
+`.venv\\Scripts\\python.exe`; no Linux/macOS, usam `python3.14` e
+`.venv/bin/python`.
+
+Os comandos manuais descritos nas seções seguintes continuam disponíveis para
+ambientes que não utilizem GNU Make.
+
+O target `run` mantém o terminal ocupado enquanto a aplicação estiver em
+execução; use `Ctrl+C` para encerrar. A ativação manual do ambiente virtual não
+é necessária para esses targets. O target `install` precisa ser executado antes
+de `run` ou `test` em uma cópia recém-clonada.
+
 ## Tecnologias, modelos e assistentes
 
 - Python 3.14, FastAPI, Uvicorn, SQLAlchemy, SQLite e Pydantic v2;
