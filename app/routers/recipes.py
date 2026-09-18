@@ -1,7 +1,7 @@
 """Rotas web e JSON para o fluxo manual de receitas."""
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, RedirectResponse
@@ -10,20 +10,27 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
+from app.models import RecipeImage
 from app.repositories.recipe_repository import get_demo_user, get_recipe, list_recipes
 from app.schemas.domain import RecipeManualInput
-from app.services.recipe_service import RecipeInput, create_recipe, delete_recipe, update_recipe
+from app.services.recipe_service import (
+    RecipeInput,
+    create_recipe,
+    delete_recipe,
+    update_recipe,
+)
 from app.services.storage import delete_image, save_image
-from app.models import RecipeImage
-
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 api_router = APIRouter(prefix="/api/recipes", tags=["recipes-api"])
-templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
+templates = Jinja2Templates(
+    directory=Path(__file__).resolve().parent.parent / "templates"
+)
+DB_DEPENDENCY = Depends(get_db)
 
 
 def to_recipe_input(data: RecipeManualInput) -> RecipeInput:
-    """Converte o schema Pydantic do formulário no objeto do serviço de domínio."""
+    """Converta o schema Pydantic do formulário no objeto do serviço de domínio."""
     return RecipeInput(**data.model_dump())
 
 
@@ -33,7 +40,7 @@ def recipe_context(request: Request, **values: object) -> dict[str, object]:
 
 
 @router.get("")
-def recipe_list(request: Request, db: Session = Depends(get_db)):
+def recipe_list(request: Request, db: Session = DB_DEPENDENCY):
     """Renderiza a listagem de receitas do usuário local."""
     user = get_demo_user(db)
     return templates.TemplateResponse(
@@ -57,17 +64,17 @@ def new_recipe(request: Request):
 async def create_manual_recipe(
     request: Request,
     title: Annotated[str, Form()],
-    servings: Annotated[Optional[int], Form()] = None,
-    prep_time_minutes: Annotated[Optional[int], Form()] = None,
-    origin_story: Annotated[Optional[str], Form()] = None,
-    original_text: Annotated[Optional[str], Form()] = None,
-    ingredient_descriptions: Annotated[list[str], Form()] = [],
-    ingredient_quantities: Annotated[list[str], Form()] = [],
-    ingredient_units: Annotated[list[str], Form()] = [],
-    step_instructions: Annotated[list[str], Form()] = [],
-    tags: Annotated[list[str], Form()] = [],
+    servings: Annotated[int | None, Form()] = None,
+    prep_time_minutes: Annotated[int | None, Form()] = None,
+    origin_story: Annotated[str | None, Form()] = None,
+    original_text: Annotated[str | None, Form()] = None,
+    ingredient_descriptions: Annotated[list[str] | None, Form()] = None,
+    ingredient_quantities: Annotated[list[str] | None, Form()] = None,
+    ingredient_units: Annotated[list[str] | None, Form()] = None,
+    step_instructions: Annotated[list[str] | None, Form()] = None,
+    tags: Annotated[list[str] | None, Form()] = None,
     image: UploadFile | None = None,
-    db: Session = Depends(get_db),
+    db: Session = DB_DEPENDENCY,
 ):
     """Recebe e persiste uma receita manual, incluindo imagem opcional."""
     stored_image: tuple[str, str, str] | None = None
@@ -78,11 +85,11 @@ async def create_manual_recipe(
             prep_time_minutes=prep_time_minutes,
             origin_story=origin_story,
             original_text=original_text,
-            ingredient_descriptions=ingredient_descriptions,
-            ingredient_quantities=ingredient_quantities,
-            ingredient_units=ingredient_units,
-            step_instructions=step_instructions,
-            tags=tags,
+            ingredient_descriptions=ingredient_descriptions or [],
+            ingredient_quantities=ingredient_quantities or [],
+            ingredient_units=ingredient_units or [],
+            step_instructions=step_instructions or [],
+            tags=tags or [],
         )
         if image is not None and image.filename:
             stored_image = await save_image(image)
@@ -112,14 +119,16 @@ async def create_manual_recipe(
             return templates.TemplateResponse(
                 request=request,
                 name="recipes/form.html",
-                context=recipe_context(request, recipe=None, error=str(error), mode="create"),
+                context=recipe_context(
+                    request, recipe=None, error=str(error), mode="create"
+                ),
                 status_code=400,
             )
         raise
 
 
 @router.get("/{public_id}")
-def recipe_detail(public_id: str, request: Request, db: Session = Depends(get_db)):
+def recipe_detail(public_id: str, request: Request, db: Session = DB_DEPENDENCY):
     """Renderiza os detalhes de uma receita autorizada."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
@@ -132,7 +141,7 @@ def recipe_detail(public_id: str, request: Request, db: Session = Depends(get_db
 
 
 @router.get("/{public_id}/edit")
-def edit_recipe(public_id: str, request: Request, db: Session = Depends(get_db)):
+def edit_recipe(public_id: str, request: Request, db: Session = DB_DEPENDENCY):
     """Renderiza o formulário preenchido para edição de uma receita."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
@@ -149,17 +158,17 @@ async def update_manual_recipe(
     public_id: str,
     request: Request,
     title: Annotated[str, Form()],
-    servings: Annotated[Optional[int], Form()] = None,
-    prep_time_minutes: Annotated[Optional[int], Form()] = None,
-    origin_story: Annotated[Optional[str], Form()] = None,
-    original_text: Annotated[Optional[str], Form()] = None,
-    ingredient_descriptions: Annotated[list[str], Form()] = [],
-    ingredient_quantities: Annotated[list[str], Form()] = [],
-    ingredient_units: Annotated[list[str], Form()] = [],
-    step_instructions: Annotated[list[str], Form()] = [],
-    tags: Annotated[list[str], Form()] = [],
+    servings: Annotated[int | None, Form()] = None,
+    prep_time_minutes: Annotated[int | None, Form()] = None,
+    origin_story: Annotated[str | None, Form()] = None,
+    original_text: Annotated[str | None, Form()] = None,
+    ingredient_descriptions: Annotated[list[str] | None, Form()] = None,
+    ingredient_quantities: Annotated[list[str] | None, Form()] = None,
+    ingredient_units: Annotated[list[str] | None, Form()] = None,
+    step_instructions: Annotated[list[str] | None, Form()] = None,
+    tags: Annotated[list[str] | None, Form()] = None,
     image: UploadFile | None = None,
-    db: Session = Depends(get_db),
+    db: Session = DB_DEPENDENCY,
 ):
     """Atualiza uma receita manual e substitui sua imagem quando enviada."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
@@ -171,11 +180,11 @@ async def update_manual_recipe(
         prep_time_minutes=prep_time_minutes,
         origin_story=origin_story,
         original_text=original_text,
-        ingredient_descriptions=ingredient_descriptions,
-        ingredient_quantities=ingredient_quantities,
-        ingredient_units=ingredient_units,
-        step_instructions=step_instructions,
-        tags=tags,
+        ingredient_descriptions=ingredient_descriptions or [],
+        ingredient_quantities=ingredient_quantities or [],
+        ingredient_units=ingredient_units or [],
+        step_instructions=step_instructions or [],
+        tags=tags or [],
     )
     stored_image: tuple[str, str, str] | None = None
     old_images = list(recipe.images) if image is not None and image.filename else []
@@ -206,7 +215,9 @@ async def update_manual_recipe(
             return templates.TemplateResponse(
                 request=request,
                 name="recipes/form.html",
-                context=recipe_context(request, recipe=recipe, error=str(error), mode="edit"),
+                context=recipe_context(
+                    request, recipe=recipe, error=str(error), mode="edit"
+                ),
                 status_code=400,
             )
         raise
@@ -214,7 +225,7 @@ async def update_manual_recipe(
 
 
 @router.post("/{public_id}/delete")
-def remove_recipe(public_id: str, db: Session = Depends(get_db)):
+def remove_recipe(public_id: str, db: Session = DB_DEPENDENCY):
     """Exclui uma receita autorizada e redireciona para a listagem."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
@@ -224,32 +235,42 @@ def remove_recipe(public_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/{public_id}/images/{image_public_id}")
-def recipe_image(public_id: str, image_public_id: str, db: Session = Depends(get_db)):
+def recipe_image(public_id: str, image_public_id: str, db: Session = DB_DEPENDENCY):
     """Entrega uma imagem somente após validar receita, arquivo e diretório local."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
         raise HTTPException(status_code=404, detail="Receita não encontrada.")
-    image = next((item for item in recipe.images if item.public_id == image_public_id), None)
+    image = next(
+        (item for item in recipe.images if item.public_id == image_public_id), None
+    )
     if image is None:
         raise HTTPException(status_code=404, detail="Imagem não encontrada.")
     target = (settings.uploads_dir / Path(image.stored_filename).name).resolve()
     if target.parent != settings.uploads_dir.resolve() or not target.is_file():
         raise HTTPException(status_code=404, detail="Arquivo da imagem não encontrado.")
-    return FileResponse(target, media_type=image.content_type, filename=image.original_filename)
+    return FileResponse(
+        target, media_type=image.content_type, filename=image.original_filename
+    )
 
 
 @api_router.get("")
-def recipe_list_json(db: Session = Depends(get_db)) -> list[dict[str, object]]:
+def recipe_list_json(db: Session = DB_DEPENDENCY) -> list[dict[str, object]]:
     """Retorna a listagem resumida de receitas em JSON."""
     user = get_demo_user(db)
     return [
-        {"public_id": recipe.public_id, "title": recipe.title, "servings": recipe.servings}
+        {
+            "public_id": recipe.public_id,
+            "title": recipe.title,
+            "servings": recipe.servings,
+        }
         for recipe in list_recipes(db, user)
     ]
 
 
 @api_router.get("/{public_id}")
-def recipe_detail_json(public_id: str, db: Session = Depends(get_db)) -> dict[str, object]:
+def recipe_detail_json(
+    public_id: str, db: Session = DB_DEPENDENCY
+) -> dict[str, object]:
     """Retorna uma receita autorizada e seus componentes em JSON."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:

@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-
 client = TestClient(app)
 
 
@@ -12,7 +11,12 @@ def test_recipe_endpoints_return_404_for_unknown_resources() -> None:
     """Garante 404 para detalhes, edição, exclusão, imagem e API de receita inexistente."""
     assert client.get("/recipes/unknown-recipe").status_code == 404
     assert client.get("/recipes/unknown-recipe/edit").status_code == 404
-    assert client.post("/recipes/unknown-recipe/delete", follow_redirects=False).status_code == 404
+    assert (
+        client.post(
+            "/recipes/unknown-recipe/delete", follow_redirects=False
+        ).status_code
+        == 404
+    )
     assert client.get("/recipes/unknown-recipe/images/unknown-image").status_code == 404
     assert client.get("/api/recipes/unknown-recipe").status_code == 404
 
@@ -20,20 +24,46 @@ def test_recipe_endpoints_return_404_for_unknown_resources() -> None:
 def test_import_and_shopping_endpoints_return_404_for_unknown_resources() -> None:
     """Garante 404 para jobs e listas de compras inexistentes."""
     assert client.get("/recipes/import/unknown-job/review").status_code == 404
-    assert client.post("/recipes/import/unknown-job/review", data={"title": "Teste"}).status_code == 404
+    assert (
+        client.post(
+            "/recipes/import/unknown-job/review", data={"title": "Teste"}
+        ).status_code
+        == 404
+    )
     assert client.get("/shopping-list/unknown-list/text").status_code == 404
-    assert client.post("/shopping-list/unknown-list/delete", follow_redirects=False).status_code == 404
-    assert client.post("/shopping-list/unknown-list/items", data={"description": "Café"}).status_code == 404
-    assert client.post(
-        "/shopping-list/unknown-list/items/unknown-item/toggle", follow_redirects=False
-    ).status_code == 404
+    assert (
+        client.post(
+            "/shopping-list/unknown-list/delete", follow_redirects=False
+        ).status_code
+        == 404
+    )
+    assert (
+        client.post(
+            "/shopping-list/unknown-list/items", data={"description": "Café"}
+        ).status_code
+        == 404
+    )
+    assert (
+        client.post(
+            "/shopping-list/unknown-list/items/unknown-item/toggle",
+            follow_redirects=False,
+        ).status_code
+        == 404
+    )
 
 
 def test_recipe_endpoints_reject_invalid_payloads() -> None:
     """Garante 422 para campos ausentes, vazios ou com tipo inválido."""
     assert client.post("/recipes", data={}).status_code == 422
-    assert client.post("/recipes", data={"title": "", "servings": "2"}).status_code == 422
-    assert client.post("/recipes", data={"title": "Teste", "servings": "não-numérico"}).status_code == 422
+    assert (
+        client.post("/recipes", data={"title": "", "servings": "2"}).status_code == 422
+    )
+    assert (
+        client.post(
+            "/recipes", data={"title": "Teste", "servings": "não-numérico"}
+        ).status_code
+        == 422
+    )
 
 
 def test_import_and_shopping_endpoints_handle_invalid_payloads() -> None:
@@ -71,4 +101,7 @@ def test_api_recipe_endpoint_returns_stable_minimal_payload() -> None:
     assert payload["title"] == "Receita API edge"
     assert payload["ingredients"] == []
     assert payload["preparation_steps"] == ["Teste"]
-    assert client.post(f"/recipes/{public_id}/delete", follow_redirects=False).status_code == 303
+    assert (
+        client.post(f"/recipes/{public_id}/delete", follow_redirects=False).status_code
+        == 303
+    )

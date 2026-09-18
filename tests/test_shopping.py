@@ -72,7 +72,12 @@ def test_shopping_list_flow_generates_and_manages_items() -> None:
 
         added = client.post(
             f"/shopping-list/{list_id}/items",
-            data={"description": "café", "quantity": "1", "unit": "pacote", "notes": "sem açúcar"},
+            data={
+                "description": "café",
+                "quantity": "1",
+                "unit": "pacote",
+                "notes": "sem açúcar",
+            },
             follow_redirects=False,
         )
         assert added.status_code == 303
@@ -83,17 +88,30 @@ def test_shopping_list_flow_generates_and_manages_items() -> None:
             follow_redirects=False,
         )
         assert edited.status_code == 303
-        assert client.post(
-            f"/shopping-list/{list_id}/items/{item_id}/toggle", follow_redirects=False
-        ).status_code == 303
+        assert (
+            client.post(
+                f"/shopping-list/{list_id}/items/{item_id}/toggle",
+                follow_redirects=False,
+            ).status_code
+            == 303
+        )
         assert client.get(f"/shopping-list/{list_id}/text").status_code == 200
-        assert client.post(
-            f"/shopping-list/{list_id}/items/{item_id}/delete", follow_redirects=False
-        ).status_code == 303
+        assert (
+            client.post(
+                f"/shopping-list/{list_id}/items/{item_id}/delete",
+                follow_redirects=False,
+            ).status_code
+            == 303
+        )
 
-        deleted = client.post(f"/shopping-list/{list_id}/delete", follow_redirects=False)
+        deleted = client.post(
+            f"/shopping-list/{list_id}/delete", follow_redirects=False
+        )
         assert deleted.status_code == 303
         assert client.get(f"/shopping-list?list_id={list_id}").status_code == 200
 
         with SessionLocal() as db:
-            assert db.scalar(select(ShoppingList).where(ShoppingList.public_id == list_id)) is None
+            assert (
+                db.scalar(select(ShoppingList).where(ShoppingList.public_id == list_id))
+                is None
+            )

@@ -27,6 +27,10 @@ def get_shopping_list(db: Session, public_id: str, user: User) -> ShoppingList |
     return db.scalars(statement).unique().first()
 
 
-def get_shopping_item(db: Session, public_id: str, shopping_list: ShoppingList) -> ShoppingListItem | None:
+def get_shopping_item(
+    db: Session, public_id: str, shopping_list: ShoppingList
+) -> ShoppingListItem | None:
     """Busca um item somente entre os itens da lista já autorizada."""
-    return next((item for item in shopping_list.items if item.public_id == public_id), None)
+    return next(
+        (item for item in shopping_list.items if item.public_id == public_id), None
+    )

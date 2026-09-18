@@ -12,18 +12,17 @@ from app.db.session import get_db, initialize_database
 from app.repositories.recipe_repository import get_demo_user, list_recipes
 from app.routers import imports, recipes, shopping
 
-
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=APP_DIR / "templates")
 
 settings.uploads_dir.mkdir(parents=True, exist_ok=True)
+DB_DEPENDENCY = Depends(get_db)
 (settings.uploads_dir.parent / "data").mkdir(parents=True, exist_ok=True)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Inicializa a estrutura do banco antes de atender requisições."""
-
     initialize_database()
     yield
 
@@ -37,9 +36,8 @@ app.include_router(shopping.router)
 
 
 @app.get("/", include_in_schema=False)
-def index(request: Request, db: Session = Depends(get_db)):
+def index(request: Request, db: Session = DB_DEPENDENCY):
     """Renderiza a página inicial mínima do MVP."""
-
     recipes = list_recipes(db, get_demo_user(db))
 
     return templates.TemplateResponse(
@@ -52,5 +50,4 @@ def index(request: Request, db: Session = Depends(get_db)):
 @app.get("/health")
 def health() -> dict[str, str]:
     """Indica que a aplicação está disponível."""
-
     return {"status": "ok"}

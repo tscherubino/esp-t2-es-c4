@@ -8,7 +8,6 @@ from app.main import app
 from app.models import ImportJob, Recipe, ShoppingList, ShoppingListItem
 from app.repositories.recipe_repository import get_demo_user
 
-
 PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"0" * 32
 
 
@@ -18,7 +17,9 @@ def test_invalid_manual_upload_does_not_persist_recipe() -> None:
         response = client.post(
             "/recipes",
             data={"title": title},
-            files={"image": ("programa.exe", io.BytesIO(b"MZ-executavel"), "image/png")},
+            files={
+                "image": ("programa.exe", io.BytesIO(b"MZ-executavel"), "image/png")
+            },
         )
 
     assert response.status_code == 400
@@ -85,10 +86,15 @@ def test_edit_recipe_replaces_selected_image(tmp_path, monkeypatch) -> None:
 
         assert not old_path.exists()
         assert new_path.exists()
-        assert client.get(f"/recipes/{public_id}/images/{new_image_id}").content == replacement
+        assert (
+            client.get(f"/recipes/{public_id}/images/{new_image_id}").content
+            == replacement
+        )
 
 
-def test_delete_recipe_removes_image_import_job_and_recipe_reference(tmp_path, monkeypatch) -> None:
+def test_delete_recipe_removes_image_import_job_and_recipe_reference(
+    tmp_path, monkeypatch
+) -> None:
     from app.core.config import settings
 
     monkeypatch.setattr(settings, "uploads_dir", tmp_path)
@@ -110,16 +116,18 @@ def test_delete_recipe_removes_image_import_job_and_recipe_reference(tmp_path, m
             shopping_list.items.append(
                 ShoppingListItem(recipe_id=recipe.id, description="item vinculado")
             )
-            db.add_all([
-                shopping_list,
-                ImportJob(
-                    user_id=user.id,
-                    recipe_id=recipe.id,
-                    source_type="text",
-                    status="completed",
-                    original_text="fonte importada",
-                ),
-            ])
+            db.add_all(
+                [
+                    shopping_list,
+                    ImportJob(
+                        user_id=user.id,
+                        recipe_id=recipe.id,
+                        source_type="text",
+                        status="completed",
+                        original_text="fonte importada",
+                    ),
+                ]
+            )
             db.commit()
 
         deleted = client.post(f"/recipes/{public_id}/delete", follow_redirects=False)
@@ -127,8 +135,17 @@ def test_delete_recipe_removes_image_import_job_and_recipe_reference(tmp_path, m
         assert not image_path.exists()
 
         with SessionLocal() as db:
-            assert db.scalar(select(Recipe).where(Recipe.public_id == public_id)) is None
-            assert db.scalar(select(ImportJob).where(ImportJob.recipe_id.is_not(None))) is None
-            item = db.scalar(select(ShoppingListItem).where(ShoppingListItem.description == "item vinculado"))
+            assert (
+                db.scalar(select(Recipe).where(Recipe.public_id == public_id)) is None
+            )
+            assert (
+                db.scalar(select(ImportJob).where(ImportJob.recipe_id.is_not(None)))
+                is None
+            )
+            item = db.scalar(
+                select(ShoppingListItem).where(
+                    ShoppingListItem.description == "item vinculado"
+                )
+            )
             assert item is not None
             assert item.recipe_id is None

@@ -4,8 +4,8 @@ import re
 
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.db.session import SessionLocal
+from app.main import app
 from app.processors import (
     ManualTranscriptionOCRProvider,
     MockLLMRecipeParser,
@@ -14,7 +14,6 @@ from app.processors import (
 )
 from app.repositories.recipe_repository import get_demo_user
 from app.services.import_service import RecipeImportService
-
 
 RECIPE_TEXT = """Bolo simples
 Rende: 8 porções
@@ -122,5 +121,15 @@ def test_image_import_with_manual_transcription_requires_review_before_save() ->
         assert "Bolo de imagem revisado" in detail.text
         image_match = re.search(r"/recipes/[^\"]+/images/([^\"]+)", detail.text)
         assert image_match is not None
-        assert client.get(f"/recipes/{public_id}/images/{image_match.group(1)}").status_code == 200
-        assert client.post(f"/recipes/{public_id}/delete", follow_redirects=False).status_code == 303
+        assert (
+            client.get(
+                f"/recipes/{public_id}/images/{image_match.group(1)}"
+            ).status_code
+            == 200
+        )
+        assert (
+            client.post(
+                f"/recipes/{public_id}/delete", follow_redirects=False
+            ).status_code
+            == 303
+        )
