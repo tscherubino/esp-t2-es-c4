@@ -2,8 +2,6 @@
 
 import json
 import logging
-from typing import Optional
-
 from fastapi import UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -51,9 +49,9 @@ class RecipeImportService:
         self,
         db: Session,
         user: User,
-        original_text: Optional[str],
-        image: Optional[UploadFile],
-        manual_transcription: Optional[str] = None,
+        original_text: str | None,
+        image: UploadFile | None,
+        manual_transcription: str | None = None,
     ) -> tuple[ImportJob, StructuredRecipe, str]:
         """Analisa texto ou imagem, persiste o job e retorna a sugestão para revisão."""
         source_text = original_text.strip() if original_text and original_text.strip() else None
