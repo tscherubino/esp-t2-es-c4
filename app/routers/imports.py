@@ -89,11 +89,11 @@ def finalize_import(
     servings: Annotated[int | None, Form()] = None,
     prep_time_minutes: Annotated[int | None, Form()] = None,
     origin_story: Annotated[str | None, Form()] = None,
-    ingredient_names: Annotated[list[str], Form()] = [],
-    ingredient_quantities: Annotated[list[str], Form()] = [],
-    ingredient_units: Annotated[list[str], Form()] = [],
-    preparation_steps: Annotated[list[str], Form()] = [],
-    tags: Annotated[list[str], Form()] = [],
+    ingredient_names: Annotated[list[str] | None, Form()] = None,
+    ingredient_quantities: Annotated[list[str] | None, Form()] = None,
+    ingredient_units: Annotated[list[str] | None, Form()] = None,
+    preparation_steps: Annotated[list[str] | None, Form()] = None,
+    tags: Annotated[list[str] | None, Form()] = None,
     db: Session = Depends(get_db),
 ):
     """Valida a revisão humana e transforma o job concluído em uma receita."""
@@ -108,11 +108,11 @@ def finalize_import(
             servings=servings,
             prep_time_minutes=prep_time_minutes,
             origin_story=origin_story,
-            ingredient_names=ingredient_names,
-            ingredient_quantities=ingredient_quantities,
-            ingredient_units=ingredient_units,
-            preparation_steps=preparation_steps,
-            tags=tags,
+            ingredient_names=ingredient_names or [],
+            ingredient_quantities=ingredient_quantities or [],
+            ingredient_units=ingredient_units or [],
+            preparation_steps=preparation_steps or [],
+            tags=tags or [],
         )
         recipe = service.finalize(db, job, user, review)
     except ValueError as error:

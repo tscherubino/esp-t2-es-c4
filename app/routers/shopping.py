@@ -58,11 +58,18 @@ def shopping_list(request: Request, list_id: str | None = None, db: Session = De
 
 
 @router.post("/shopping-list/generate")
-def generate_shopping_list(request: Request, recipe_ids: Annotated[list[str], Form()] = [], name: Annotated[str, Form()] = "Lista de compras", db: Session = Depends(get_db)):
+def generate_shopping_list(
+    request: Request,
+    recipe_ids: Annotated[list[str] | None, Form()] = None,
+    name: Annotated[str, Form()] = "Lista de compras",
+    db: Session = Depends(get_db),
+):
     """Gera uma lista a partir das receitas selecionadas."""
     user = get_demo_user(db)
     try:
-        shopping_list, warnings = create_list_from_recipes(db, user, recipe_ids, name)
+        shopping_list, warnings = create_list_from_recipes(
+            db, user, recipe_ids or [], name
+        )
     except ValueError as error:
         return render_page(request, db, user, error=str(error))
     return render_page(request, db, user, selected_list=shopping_list, warnings=warnings)
