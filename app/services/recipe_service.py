@@ -6,7 +6,7 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Ingredient, PreparationStep, Recipe, RecipeImage, RecipeTag, Tag, User
+from app.models import Ingredient, PreparationStep, Recipe, RecipeTag, Tag, User
 from app.repositories.recipe_repository import get_recipe, list_recipes
 from app.services.storage import delete_image
 

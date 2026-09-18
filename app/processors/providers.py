@@ -74,8 +74,8 @@ class RuleBasedRecipeParser(LLMRecipeParser):
         title = lines[0][:200]
         servings = None
         prep_time = None
-        servings_match = re.search(r"(?:rende|porções?|serve)\s*[:\-]?\s*(\d+)", text, re.I)
-        time_match = re.search(r"(?:tempo|preparo)\s*[:\-]?\s*(\d+)\s*(?:min|minutos)?", text, re.I)
+        servings_match = re.search(r"(?:rende|porções?|serve)\s*[:\-]?\s*(\d+)", text, re.IGNORECASE)
+        time_match = re.search(r"(?:tempo|preparo)\s*[:\-]?\s*(\d+)\s*(?:min|minutos)?", text, re.IGNORECASE)
         if servings_match:
             servings = servings_match.group(1)
         if time_match:
@@ -120,7 +120,7 @@ class RuleBasedRecipeParser(LLMRecipeParser):
             if normalized in {"modo de preparo", "preparo", "instruções", "instrucoes"}:
                 section = "steps"
                 continue
-            if re.match(r"^(rende|porções?|serve|tempo|preparo)\s*[:\-]", line, re.I):
+            if re.match(r"^(rende|porções?|serve|tempo|preparo)\s*[:\-]", line, re.IGNORECASE):
                 continue
             (ingredients if section == "ingredients" else steps).append(line)
         return ingredients, steps
