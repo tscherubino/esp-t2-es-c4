@@ -50,7 +50,7 @@ def test_import_and_shopping_endpoints_handle_invalid_payloads() -> None:
         "/shopping-list/generate", data={"recipe_ids": ["unknown-recipe"]}
     )
     assert unknown_recipe_response.status_code == 200
-    assert "não foi encontrada" in unknown_recipe_response.text or "nÃ£o foi encontrada" in unknown_recipe_response.text
+    assert "não foi encontrada" in unknown_recipe_response.text
 
 
 def test_api_recipe_endpoint_returns_stable_minimal_payload() -> None:
