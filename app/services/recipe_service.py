@@ -81,18 +81,26 @@ def _replace_children(db: Session, recipe: Recipe, data: RecipeInput) -> None:
         recipe.ingredients.append(
             Ingredient(
                 description=description,
-                quantity=quantities[position].strip() if position < len(quantities) else None,
+                quantity=quantities[position].strip()
+                if position < len(quantities)
+                else None,
                 unit=units[position].strip() if position < len(units) else None,
                 position=position,
             )
         )
 
     for position, instruction in enumerate(clean_values(data.step_instructions)):
-        recipe.preparation_steps.append(PreparationStep(position=position, instruction=instruction))
+        recipe.preparation_steps.append(
+            PreparationStep(position=position, instruction=instruction)
+        )
 
     tag_names = dict.fromkeys(name.casefold() for name in clean_values(data.tags))
     for normalized_name in tag_names:
-        tag = db.scalar(select(Tag).where(Tag.user_id == recipe.user_id, Tag.name == normalized_name))
+        tag = db.scalar(
+            select(Tag).where(
+                Tag.user_id == recipe.user_id, Tag.name == normalized_name
+            )
+        )
         if tag is None:
             tag = Tag(user_id=recipe.user_id, name=normalized_name)
             db.add(tag)
@@ -102,7 +110,9 @@ def _replace_children(db: Session, recipe: Recipe, data: RecipeInput) -> None:
         db.add(recipe_tag)
 
 
-def create_recipe(db: Session, user: User, data: RecipeInput, *, commit: bool = True) -> Recipe:
+def create_recipe(
+    db: Session, user: User, data: RecipeInput, *, commit: bool = True
+) -> Recipe:
     """Cria uma receita e seus componentes editáveis.
 
     Args:
@@ -133,7 +143,9 @@ def create_recipe(db: Session, user: User, data: RecipeInput, *, commit: bool = 
     return recipe
 
 
-def update_recipe(db: Session, recipe: Recipe, data: RecipeInput, *, commit: bool = True) -> Recipe:
+def update_recipe(
+    db: Session, recipe: Recipe, data: RecipeInput, *, commit: bool = True
+) -> Recipe:
     """Atualiza os dados principais e componentes editáveis da receita.
 
     Args:
@@ -182,4 +194,11 @@ def delete_recipe(db: Session, recipe: Recipe) -> None:
     db.commit()
 
 
-__all__ = ["RecipeInput", "create_recipe", "delete_recipe", "get_recipe", "list_recipes", "update_recipe"]
+__all__ = [
+    "RecipeInput",
+    "create_recipe",
+    "delete_recipe",
+    "get_recipe",
+    "list_recipes",
+    "update_recipe",
+]

@@ -29,7 +29,9 @@ class TimestampMixin:
         default=lambda: datetime.now(UTC), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
     )
 
 
@@ -60,7 +62,9 @@ class Recipe(PublicIdMixin, TimestampMixin, Base):
 
     __tablename__ = "recipes"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True
+    )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     servings: Mapped[int | None] = mapped_column(Integer, nullable=True)
     prep_time_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -72,16 +76,22 @@ class Recipe(PublicIdMixin, TimestampMixin, Base):
         back_populates="recipe", cascade="all, delete-orphan"
     )
     ingredients: Mapped[list["Ingredient"]] = relationship(
-        back_populates="recipe", cascade="all, delete-orphan", order_by="Ingredient.position"
+        back_populates="recipe",
+        cascade="all, delete-orphan",
+        order_by="Ingredient.position",
     )
     preparation_steps: Mapped[list["PreparationStep"]] = relationship(
-        back_populates="recipe", cascade="all, delete-orphan", order_by="PreparationStep.position"
+        back_populates="recipe",
+        cascade="all, delete-orphan",
+        order_by="PreparationStep.position",
     )
     recipe_tags: Mapped[list["RecipeTag"]] = relationship(
         back_populates="recipe", cascade="all, delete-orphan"
     )
     import_jobs: Mapped[list["ImportJob"]] = relationship(back_populates="recipe")
-    shopping_list_items: Mapped[list["ShoppingListItem"]] = relationship(back_populates="recipe")
+    shopping_list_items: Mapped[list["ShoppingListItem"]] = relationship(
+        back_populates="recipe"
+    )
 
 
 class RecipeImage(PublicIdMixin, TimestampMixin, Base):
@@ -89,9 +99,13 @@ class RecipeImage(PublicIdMixin, TimestampMixin, Base):
 
     __tablename__ = "recipe_images"
 
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipes.id"), nullable=False, index=True
+    )
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
-    stored_filename: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    stored_filename: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True
+    )
     content_type: Mapped[str] = mapped_column(String(100), nullable=False)
     relative_path: Mapped[str] = mapped_column(String(500), nullable=False)
 
@@ -103,7 +117,9 @@ class Ingredient(PublicIdMixin, TimestampMixin, Base):
 
     __tablename__ = "ingredients"
 
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipes.id"), nullable=False, index=True
+    )
     description: Mapped[str] = mapped_column(String(255), nullable=False)
     quantity: Mapped[str | None] = mapped_column(String(50), nullable=True)
     unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
@@ -118,7 +134,9 @@ class PreparationStep(PublicIdMixin, TimestampMixin, Base):
 
     __tablename__ = "preparation_steps"
 
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipes.id"), nullable=False, index=True
+    )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
     instruction: Mapped[str] = mapped_column(Text, nullable=False)
 
@@ -130,7 +148,9 @@ class Tag(PublicIdMixin, TimestampMixin, Base):
 
     __tablename__ = "tags"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True
+    )
     name: Mapped[str] = mapped_column(String(80), nullable=False)
 
     user: Mapped["User"] = relationship(back_populates="tags")
@@ -146,8 +166,12 @@ class RecipeTag(PublicIdMixin, TimestampMixin, Base):
 
     __tablename__ = "recipe_tags"
 
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), nullable=False, index=True)
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipes.id"), nullable=False, index=True
+    )
+    tag_id: Mapped[int] = mapped_column(
+        ForeignKey("tags.id"), nullable=False, index=True
+    )
 
     recipe: Mapped["Recipe"] = relationship(back_populates="recipe_tags")
     tag: Mapped["Tag"] = relationship(back_populates="recipe_tags")
@@ -160,7 +184,9 @@ class ShoppingList(PublicIdMixin, TimestampMixin, Base):
 
     __tablename__ = "shopping_lists"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True
+    )
     name: Mapped[str] = mapped_column(String(150), nullable=False)
 
     user: Mapped["User"] = relationship(back_populates="shopping_lists")
@@ -195,16 +221,24 @@ class ImportJob(PublicIdMixin, TimestampMixin, Base):
 
     __tablename__ = "import_jobs"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True
+    )
     recipe_id: Mapped[int | None] = mapped_column(
         ForeignKey("recipes.id"), nullable=True, index=True
     )
     source_type: Mapped[str] = mapped_column(String(30), nullable=False)
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending", index=True)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pending", index=True
+    )
     original_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
-    image_original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    image_stored_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    image_original_filename: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
+    image_stored_filename: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
     image_content_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
     image_relative_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     structured_payload: Mapped[str | None] = mapped_column(Text, nullable=True)

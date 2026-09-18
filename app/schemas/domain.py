@@ -256,7 +256,9 @@ class ImportJobCreate(SchemaBase):
 class ImportJobUpdate(SchemaBase):
     """Entrada parcial para atualização de job de importação."""
 
-    status: str | None = Field(default=None, pattern="^(pending|processing|completed|failed)$")
+    status: str | None = Field(
+        default=None, pattern="^(pending|processing|completed|failed)$"
+    )
     recipe_id: int | None = None
     error_message: str | None = None
 

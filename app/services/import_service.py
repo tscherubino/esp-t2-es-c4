@@ -54,8 +54,15 @@ class RecipeImportService:
         manual_transcription: str | None = None,
     ) -> tuple[ImportJob, StructuredRecipe, str]:
         """Analisa texto ou imagem, persiste o job e retorna a sugestão para revisão."""
-        source_text = original_text.strip() if original_text and original_text.strip() else None
-        job = ImportJob(user_id=user.id, source_type="text", status="processing", original_text=source_text)
+        source_text = (
+            original_text.strip() if original_text and original_text.strip() else None
+        )
+        job = ImportJob(
+            user_id=user.id,
+            source_type="text",
+            status="processing",
+            original_text=source_text,
+        )
         db.add(job)
         db.commit()
         db.refresh(job)
@@ -72,7 +79,9 @@ class RecipeImportService:
                 job.image_content_type = content_type
                 job.image_relative_path = relative_path
                 if not source_text:
-                    source_text = self.ocr_provider.extract_text(image_bytes, manual_transcription)
+                    source_text = self.ocr_provider.extract_text(
+                        image_bytes, manual_transcription
+                    )
             elif not source_text:
                 raise ValueError("Informe um texto ou selecione uma imagem.")
 
@@ -96,12 +105,16 @@ class RecipeImportService:
             job.status = "failed"
             job.error_message = str(error)
             db.commit()
-            raise ValueError(f"Não foi possível analisar a importação: {error}") from error
+            raise ValueError(
+                f"Não foi possível analisar a importação: {error}"
+            ) from error
 
     def get_job(self, db: Session, public_id: str, user: User) -> ImportJob | None:
         """Busca um job de importação pertencente ao usuário informado."""
         return db.scalar(
-            select(ImportJob).where(ImportJob.public_id == public_id, ImportJob.user_id == user.id)
+            select(ImportJob).where(
+                ImportJob.public_id == public_id, ImportJob.user_id == user.id
+            )
         )
 
     def finalize(
@@ -118,8 +131,14 @@ class RecipeImportService:
         original_text = job.original_text or job.extracted_text
         servings = review.servings
         if servings is None:
-            structured = StructuredRecipe.model_validate(json.loads(job.structured_payload))
-            servings = int(structured.servings) if structured.servings and structured.servings.isdigit() else None
+            structured = StructuredRecipe.model_validate(
+                json.loads(job.structured_payload)
+            )
+            servings = (
+                int(structured.servings)
+                if structured.servings and structured.servings.isdigit()
+                else None
+            )
         recipe = create_recipe(
             db,
             user,
@@ -139,7 +158,8 @@ class RecipeImportService:
         if job.image_stored_filename:
             recipe.images.append(
                 RecipeImage(
-                    original_filename=job.image_original_filename or job.image_stored_filename,
+                    original_filename=job.image_original_filename
+                    or job.image_stored_filename,
                     stored_filename=job.image_stored_filename,
                     content_type=job.image_content_type or "application/octet-stream",
                     relative_path=job.image_relative_path or "",

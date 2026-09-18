@@ -20,7 +20,9 @@ from app.services.import_service import RecipeImportService
 
 router = APIRouter(prefix="/recipes/import", tags=["imports"])
 api_router = APIRouter(prefix="/api/recipes/import", tags=["imports-api"])
-templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
+templates = Jinja2Templates(
+    directory=Path(__file__).resolve().parent.parent / "templates"
+)
 DB_DEPENDENCY = Depends(get_db)
 
 
@@ -71,9 +73,13 @@ def review_import(job_public_id: str, request: Request, db: Session = DB_DEPENDE
     if job is None:
         raise HTTPException(status_code=404, detail="Importação não encontrada.")
     if job.status == "failed":
-        raise HTTPException(status_code=400, detail=job.error_message or "Importação falhou.")
+        raise HTTPException(
+            status_code=400, detail=job.error_message or "Importação falhou."
+        )
     if not job.structured_payload:
-        raise HTTPException(status_code=400, detail="Importação ainda não foi analisada.")
+        raise HTTPException(
+            status_code=400, detail="Importação ainda não foi analisada."
+        )
     structured = StructuredRecipe.model_validate_json(job.structured_payload)
     return templates.TemplateResponse(
         request=request,
@@ -118,7 +124,9 @@ def finalize_import(
         recipe = service.finalize(db, job, user, review)
     except ValueError as error:
         db.rollback()
-        structured = StructuredRecipe.model_validate_json(job.structured_payload or "{}")
+        structured = StructuredRecipe.model_validate_json(
+            job.structured_payload or "{}"
+        )
         return templates.TemplateResponse(
             request=request,
             name="recipes/import_review.html",

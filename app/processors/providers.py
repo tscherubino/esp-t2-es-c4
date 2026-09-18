@@ -14,7 +14,9 @@ class OCRProvider(ABC):
     """Contrato para transformar uma imagem em texto."""
 
     @abstractmethod
-    def extract_text(self, image: bytes, manual_transcription: str | None = None) -> str:
+    def extract_text(
+        self, image: bytes, manual_transcription: str | None = None
+    ) -> str:
         """Extrai texto de uma imagem, opcionalmente usando transcrição manual."""
         raise NotImplementedError
 
@@ -22,7 +24,9 @@ class OCRProvider(ABC):
 class MockOCRProvider(OCRProvider):
     """OCR determinístico local, sem leitura real da imagem."""
 
-    def extract_text(self, image: bytes, manual_transcription: str | None = None) -> str:
+    def extract_text(
+        self, image: bytes, manual_transcription: str | None = None
+    ) -> str:
         """Retorna a transcrição manual ou um texto determinístico de demonstração."""
         if manual_transcription and manual_transcription.strip():
             return manual_transcription.strip()
@@ -40,7 +44,9 @@ class MockOCRProvider(OCRProvider):
 class ManualTranscriptionOCRProvider(OCRProvider):
     """Provider que usa exclusivamente a transcrição fornecida pelo usuário."""
 
-    def extract_text(self, image: bytes, manual_transcription: str | None = None) -> str:
+    def extract_text(
+        self, image: bytes, manual_transcription: str | None = None
+    ) -> str:
         """Valida e devolve a transcrição fornecida pelo usuário."""
         if not manual_transcription or not manual_transcription.strip():
             raise ValueError("Informe uma transcrição manual para a imagem.")
@@ -73,8 +79,14 @@ class RuleBasedRecipeParser(LLMRecipeParser):
         title = lines[0][:200]
         servings = None
         prep_time = None
-        servings_match = re.search(r"(?:rende|porções?|serve)\s*[:\-]?\s*(\d+)", text, re.IGNORECASE)
-        time_match = re.search(r"(?:tempo|preparo)\s*[:\-]?\s*(\d+)\s*(?:min|minutos)?", text, re.IGNORECASE)
+        servings_match = re.search(
+            r"(?:rende|porções?|serve)\s*[:\-]?\s*(\d+)", text, re.IGNORECASE
+        )
+        time_match = re.search(
+            r"(?:tempo|preparo)\s*[:\-]?\s*(\d+)\s*(?:min|minutos)?",
+            text,
+            re.IGNORECASE,
+        )
         if servings_match:
             servings = servings_match.group(1)
         if time_match:
@@ -94,7 +106,9 @@ class RuleBasedRecipeParser(LLMRecipeParser):
         if not ingredients:
             warnings.append("Nenhum ingrediente foi identificado automaticamente.")
         if not steps:
-            warnings.append("Nenhuma etapa de preparo foi identificada automaticamente.")
+            warnings.append(
+                "Nenhuma etapa de preparo foi identificada automaticamente."
+            )
         return StructuredRecipe(
             title=title,
             servings=servings,
@@ -119,7 +133,9 @@ class RuleBasedRecipeParser(LLMRecipeParser):
             if normalized in {"modo de preparo", "preparo", "instruções", "instrucoes"}:
                 section = "steps"
                 continue
-            if re.match(r"^(rende|porções?|serve|tempo|preparo)\s*[:\-]", line, re.IGNORECASE):
+            if re.match(
+                r"^(rende|porções?|serve|tempo|preparo)\s*[:\-]", line, re.IGNORECASE
+            ):
                 continue
             (ingredients if section == "ingredients" else steps).append(line)
         return ingredients, steps
@@ -151,7 +167,9 @@ class MockLLMRecipeParser(LLMRecipeParser):
     def parse(self, text: str) -> StructuredRecipe:
         """Executa o parser local e ajusta a confiança para simular um LLM."""
         result = RuleBasedRecipeParser().parse(text)
-        result.warnings.insert(0, "Estruturação gerada pelo MockLLMRecipeParser; revise antes de salvar.")
+        result.warnings.insert(
+            0, "Estruturação gerada pelo MockLLMRecipeParser; revise antes de salvar."
+        )
         for ingredient in result.ingredients:
             ingredient.confidence_score = _confidence(0.8)
         for step in result.preparation_steps:

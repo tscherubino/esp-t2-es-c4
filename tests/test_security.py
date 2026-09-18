@@ -5,12 +5,16 @@ from app.services.storage import MAX_IMAGE_SIZE, delete_image, save_image_bytes
 PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"0" * 32
 
 
-def test_storage_accepts_valid_png_and_uses_generated_name(tmp_path, monkeypatch) -> None:
+def test_storage_accepts_valid_png_and_uses_generated_name(
+    tmp_path, monkeypatch
+) -> None:
     from app.core.config import settings
 
     monkeypatch.setattr(settings, "uploads_dir", tmp_path)
 
-    stored_filename, content_type, relative_path = save_image_bytes(PNG_BYTES, "image/png")
+    stored_filename, content_type, relative_path = save_image_bytes(
+        PNG_BYTES, "image/png"
+    )
 
     assert content_type == "image/png"
     assert stored_filename.endswith(".png")
@@ -26,7 +30,9 @@ def test_storage_accepts_valid_png_and_uses_generated_name(tmp_path, monkeypatch
         (PNG_BYTES[:8], "image/png", "conteúdo"),
     ],
 )
-def test_storage_rejects_invalid_uploads(content: bytes, content_type: str, message: str) -> None:
+def test_storage_rejects_invalid_uploads(
+    content: bytes, content_type: str, message: str
+) -> None:
     with pytest.raises(ValueError, match=message):
         save_image_bytes(content, content_type)
 

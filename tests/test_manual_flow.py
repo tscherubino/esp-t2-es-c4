@@ -46,7 +46,12 @@ def test_manual_recipe_flow_end_to_end() -> None:
         assert "sobremesa" in detail.text
         image_match = re.search(r"/recipes/[^\"]+/images/([^\"]+)", detail.text)
         assert image_match is not None
-        assert client.get(f"/recipes/{public_id}/images/{image_match.group(1)}").status_code == 200
+        assert (
+            client.get(
+                f"/recipes/{public_id}/images/{image_match.group(1)}"
+            ).status_code
+            == 200
+        )
         assert client.get(f"/api/recipes/{public_id}").status_code == 200
 
         edited = client.post(
@@ -95,8 +100,15 @@ def test_manual_recipe_flow_end_to_end() -> None:
         )
         assert finalized.status_code == 303
         imported_id = finalized.headers["location"].rsplit("/", 1)[-1]
-        assert "Receita importada revisada" in client.get(f"/recipes/{imported_id}").text
-        assert client.post(f"/recipes/{imported_id}/delete", follow_redirects=False).status_code == 303
+        assert (
+            "Receita importada revisada" in client.get(f"/recipes/{imported_id}").text
+        )
+        assert (
+            client.post(
+                f"/recipes/{imported_id}/delete", follow_redirects=False
+            ).status_code
+            == 303
+        )
 
 
 def test_manual_recipe_supports_more_than_five_ingredients_and_steps() -> None:
@@ -110,10 +122,14 @@ def test_manual_recipe_supports_more_than_five_ingredients_and_steps() -> None:
             "/recipes",
             data={
                 "title": "Receita com muitos itens",
-                "ingredient_descriptions": [f"ingrediente {index}" for index in range(1, 8)],
+                "ingredient_descriptions": [
+                    f"ingrediente {index}" for index in range(1, 8)
+                ],
                 "ingredient_quantities": [str(index) for index in range(1, 8)],
                 "ingredient_units": ["unidade"] * 7,
-                "step_instructions": [f"Etapa de teste {index}" for index in range(1, 8)],
+                "step_instructions": [
+                    f"Etapa de teste {index}" for index in range(1, 8)
+                ],
             },
             follow_redirects=False,
         )
@@ -130,4 +146,9 @@ def test_manual_recipe_supports_more_than_five_ingredients_and_steps() -> None:
         assert 'aria-label="Ingrediente 7"' in edit.text
         assert 'for="step-6"' in edit.text
 
-        assert client.post(f"/recipes/{public_id}/delete", follow_redirects=False).status_code == 303
+        assert (
+            client.post(
+                f"/recipes/{public_id}/delete", follow_redirects=False
+            ).status_code
+            == 303
+        )

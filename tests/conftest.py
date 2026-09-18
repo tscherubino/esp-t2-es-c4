@@ -27,5 +27,7 @@ def isolated_local_environment():
 @pytest.fixture
 def tmp_path(request: pytest.FixtureRequest):
     """Fornece diretório temporário isolado sem depender do plugin tmpdir."""
-    with TemporaryDirectory(prefix=f"{request.node.name}-", dir=_test_root) as directory:
+    with TemporaryDirectory(
+        prefix=f"{request.node.name}-", dir=_test_root
+    ) as directory:
         yield Path(directory)

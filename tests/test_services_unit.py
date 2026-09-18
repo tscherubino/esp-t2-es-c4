@@ -64,7 +64,10 @@ def test_recipe_service_normalizes_values_and_replaces_children() -> None:
         recipe = create_recipe(db, user, _recipe_input("criação"))
         recipe_id = recipe.public_id
         assert [item.description for item in recipe.ingredients] == ["Farinha", "Ovos"]
-        assert [step.instruction for step in recipe.preparation_steps] == ["Misture", "Asse"]
+        assert [step.instruction for step in recipe.preparation_steps] == [
+            "Misture",
+            "Asse",
+        ]
         assert [link.tag.name for link in recipe.recipe_tags] == ["teste"]
 
         update_recipe(
@@ -101,7 +104,9 @@ def test_shopping_service_manages_item_lifecycle() -> None:
         db.commit()
         db.refresh(shopping_list)
 
-        item = add_item(db, shopping_list, ShoppingItemInput("  Café ", "1", "pacote", "forte"))
+        item = add_item(
+            db, shopping_list, ShoppingItemInput("  Café ", "1", "pacote", "forte")
+        )
         assert item.description == "Café"
         assert item.notes == "forte"
         update_item(db, item, ShoppingItemInput("Café moído", None, None, None))
@@ -111,8 +116,14 @@ def test_shopping_service_manages_item_lifecycle() -> None:
         assert item.is_checked is True
 
         delete_shopping_list(db, shopping_list)
-        assert db.scalar(select(ShoppingList).where(ShoppingList.id == shopping_list.id)) is None
-        assert db.scalar(select(ShoppingListItem).where(ShoppingListItem.id == item.id)) is None
+        assert (
+            db.scalar(select(ShoppingList).where(ShoppingList.id == shopping_list.id))
+            is None
+        )
+        assert (
+            db.scalar(select(ShoppingListItem).where(ShoppingListItem.id == item.id))
+            is None
+        )
 
 
 def test_shopping_service_handles_empty_and_decimal_edge_cases() -> None:
@@ -137,7 +148,9 @@ def test_shopping_service_handles_empty_and_decimal_edge_cases() -> None:
 def test_storage_service_saves_and_deletes_valid_image() -> None:
     """Verifica ciclo unitário do armazenamento local de uma imagem PNG válida."""
     content = b"\x89PNG\r\n\x1a\n" + b"0" * 32
-    stored_filename, content_type, relative_path = save_image_bytes(content, "image/png")
+    stored_filename, content_type, relative_path = save_image_bytes(
+        content, "image/png"
+    )
     try:
         assert stored_filename.endswith(".png")
         assert content_type == "image/png"
@@ -153,7 +166,11 @@ def test_import_service_uses_injected_local_providers() -> None:
         servings="2",
         prep_time_minutes=15,
         ingredients=[IngredientSuggestion(name="Arroz", confidence_score=0.9)],
-        preparation_steps=[PreparationStepSuggestion(step_number=1, description="Cozinhe", confidence_score=0.9)],
+        preparation_steps=[
+            PreparationStepSuggestion(
+                step_number=1, description="Cozinhe", confidence_score=0.9
+            )
+        ],
         suggested_tags=[],
         warnings=[],
     )
@@ -175,7 +192,9 @@ def test_import_service_uses_injected_local_providers() -> None:
     with SessionLocal() as db:
         user = get_demo_user(db)
         service = RecipeImportService(FakeOCR(), FakeParser())
-        job, result, source_text = asyncio.run(service.analyze(db, user, " Texto original ", None))
+        job, result, source_text = asyncio.run(
+            service.analyze(db, user, " Texto original ", None)
+        )
         assert result.title == "Receita injetada"
         assert source_text == "Texto original"
         assert job.status == "completed"
@@ -198,4 +217,7 @@ def test_import_service_uses_injected_local_providers() -> None:
 def test_import_provider_factories_return_local_defaults() -> None:
     """Verifica que as fábricas usam implementações locais por padrão."""
     assert isinstance(build_ocr_provider(), MockOCRProvider)
-    assert build_recipe_parser().__class__.__name__ in {"RuleBasedRecipeParser", "MockLLMRecipeParser"}
+    assert build_recipe_parser().__class__.__name__ in {
+        "RuleBasedRecipeParser",
+        "MockLLMRecipeParser",
+    }

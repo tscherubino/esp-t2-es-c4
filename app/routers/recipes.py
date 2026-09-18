@@ -23,7 +23,9 @@ from app.services.storage import delete_image, save_image
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 api_router = APIRouter(prefix="/api/recipes", tags=["recipes-api"])
-templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
+templates = Jinja2Templates(
+    directory=Path(__file__).resolve().parent.parent / "templates"
+)
 DB_DEPENDENCY = Depends(get_db)
 
 
@@ -117,7 +119,9 @@ async def create_manual_recipe(
             return templates.TemplateResponse(
                 request=request,
                 name="recipes/form.html",
-                context=recipe_context(request, recipe=None, error=str(error), mode="create"),
+                context=recipe_context(
+                    request, recipe=None, error=str(error), mode="create"
+                ),
                 status_code=400,
             )
         raise
@@ -211,7 +215,9 @@ async def update_manual_recipe(
             return templates.TemplateResponse(
                 request=request,
                 name="recipes/form.html",
-                context=recipe_context(request, recipe=recipe, error=str(error), mode="edit"),
+                context=recipe_context(
+                    request, recipe=recipe, error=str(error), mode="edit"
+                ),
                 status_code=400,
             )
         raise
@@ -234,13 +240,17 @@ def recipe_image(public_id: str, image_public_id: str, db: Session = DB_DEPENDEN
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:
         raise HTTPException(status_code=404, detail="Receita não encontrada.")
-    image = next((item for item in recipe.images if item.public_id == image_public_id), None)
+    image = next(
+        (item for item in recipe.images if item.public_id == image_public_id), None
+    )
     if image is None:
         raise HTTPException(status_code=404, detail="Imagem não encontrada.")
     target = (settings.uploads_dir / Path(image.stored_filename).name).resolve()
     if target.parent != settings.uploads_dir.resolve() or not target.is_file():
         raise HTTPException(status_code=404, detail="Arquivo da imagem não encontrado.")
-    return FileResponse(target, media_type=image.content_type, filename=image.original_filename)
+    return FileResponse(
+        target, media_type=image.content_type, filename=image.original_filename
+    )
 
 
 @api_router.get("")
@@ -248,13 +258,19 @@ def recipe_list_json(db: Session = DB_DEPENDENCY) -> list[dict[str, object]]:
     """Retorna a listagem resumida de receitas em JSON."""
     user = get_demo_user(db)
     return [
-        {"public_id": recipe.public_id, "title": recipe.title, "servings": recipe.servings}
+        {
+            "public_id": recipe.public_id,
+            "title": recipe.title,
+            "servings": recipe.servings,
+        }
         for recipe in list_recipes(db, user)
     ]
 
 
 @api_router.get("/{public_id}")
-def recipe_detail_json(public_id: str, db: Session = DB_DEPENDENCY) -> dict[str, object]:
+def recipe_detail_json(
+    public_id: str, db: Session = DB_DEPENDENCY
+) -> dict[str, object]:
     """Retorna uma receita autorizada e seus componentes em JSON."""
     recipe = get_recipe(db, public_id, get_demo_user(db))
     if recipe is None:

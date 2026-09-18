@@ -8,7 +8,11 @@ from fastapi import UploadFile
 from app.core.config import settings
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
-ALLOWED_CONTENT_TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
+ALLOWED_CONTENT_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+}
 
 
 def _has_expected_signature(content: bytes, content_type: str) -> bool:
@@ -25,7 +29,9 @@ def _has_expected_signature(content: bytes, content_type: str) -> bool:
     signatures = {
         "image/jpeg": content.startswith(b"\xff\xd8\xff"),
         "image/png": len(content) >= 16 and content.startswith(b"\x89PNG\r\n\x1a\n"),
-        "image/webp": len(content) >= 12 and content[:4] == b"RIFF" and content[8:12] == b"WEBP",
+        "image/webp": len(content) >= 12
+        and content[:4] == b"RIFF"
+        and content[8:12] == b"WEBP",
     }
     return signatures.get(content_type, False)
 
