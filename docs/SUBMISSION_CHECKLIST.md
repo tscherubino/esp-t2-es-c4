@@ -100,7 +100,7 @@ compras, segurança e regressões críticas.
 Resultado da última execução:
 
 ```text
-25 passed, 2 warnings
+40 passed, 2 warnings
 ```
 
 Os avisos são depreciações emitidas pelas dependências de teste e não indicam
