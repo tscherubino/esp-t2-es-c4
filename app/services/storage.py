@@ -7,14 +7,21 @@ from fastapi import UploadFile
 
 from app.core.config import settings
 
-
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
 ALLOWED_CONTENT_TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
 
 
 def _has_expected_signature(content: bytes, content_type: str) -> bool:
-    """Confere a assinatura básica sem depender de bibliotecas de imagem."""
+    """Confere a assinatura básica do conteúdo da imagem.
 
+    Args:
+        content: Bytes recebidos no upload.
+        content_type: Tipo MIME informado para o arquivo.
+
+    Returns:
+        `True` quando a assinatura corresponde ao tipo MIME permitido.
+
+    """
     signatures = {
         "image/jpeg": content.startswith(b"\xff\xd8\xff"),
         "image/png": len(content) >= 16 and content.startswith(b"\x89PNG\r\n\x1a\n"),
@@ -24,8 +31,18 @@ def _has_expected_signature(content: bytes, content_type: str) -> bool:
 
 
 async def save_image(upload: UploadFile) -> tuple[str, str, str]:
-    """Valida e salva uma imagem, retornando nome interno, tipo e caminho relativo."""
+    """Valida e salva uma imagem enviada pelo usuário.
 
+    Args:
+        upload: Arquivo recebido pelo endpoint de upload.
+
+    Returns:
+        Tupla com nome interno, tipo MIME e caminho relativo do arquivo.
+
+    Raises:
+        ValueError: Se o tipo, tamanho ou conteúdo do arquivo for inválido.
+
+    """
     if upload.content_type not in ALLOWED_CONTENT_TYPES:
         raise ValueError("Envie uma imagem JPEG, PNG ou WebP.")
 
@@ -34,8 +51,19 @@ async def save_image(upload: UploadFile) -> tuple[str, str, str]:
 
 
 def save_image_bytes(content: bytes, content_type: str | None) -> tuple[str, str, str]:
-    """Salva bytes de imagem já lidos, usando o mesmo limite e whitelist."""
+    """Valida e salva bytes de imagem usando a whitelist local.
 
+    Args:
+        content: Conteúdo binário já lido do upload.
+        content_type: Tipo MIME declarado para o conteúdo.
+
+    Returns:
+        Tupla com nome interno, tipo MIME e caminho relativo do arquivo.
+
+    Raises:
+        ValueError: Se o tipo, tamanho ou assinatura do conteúdo for inválido.
+
+    """
     if content_type not in ALLOWED_CONTENT_TYPES:
         raise ValueError("Envie uma imagem JPEG, PNG ou WebP.")
     if len(content) > MAX_IMAGE_SIZE:
@@ -51,8 +79,12 @@ def save_image_bytes(content: bytes, content_type: str | None) -> tuple[str, str
 
 
 def delete_image(stored_filename: str) -> None:
-    """Remove apenas um arquivo previamente armazenado no diretório de uploads."""
+    """Remove um arquivo armazenado sem sair do diretório de uploads.
 
+    Args:
+        stored_filename: Nome interno previamente gerado pelo serviço.
+
+    """
     target = (settings.uploads_dir / Path(stored_filename).name).resolve()
     uploads_root = settings.uploads_dir.resolve()
     if target.parent == uploads_root and target.exists():
