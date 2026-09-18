@@ -2,8 +2,6 @@
 
 from abc import ABC, abstractmethod
 import re
-from typing import Optional
-
 from app.schemas.imports import (
     IngredientSuggestion,
     PreparationStepSuggestion,
@@ -15,7 +13,7 @@ class OCRProvider(ABC):
     """Contrato para transformar uma imagem em texto."""
 
     @abstractmethod
-    def extract_text(self, image: bytes, manual_transcription: Optional[str] = None) -> str:
+    def extract_text(self, image: bytes, manual_transcription: str | None = None) -> str:
         """Extrai texto de uma imagem, opcionalmente usando transcrição manual."""
         raise NotImplementedError
 
@@ -23,7 +21,7 @@ class OCRProvider(ABC):
 class MockOCRProvider(OCRProvider):
     """OCR determinístico local, sem leitura real da imagem."""
 
-    def extract_text(self, image: bytes, manual_transcription: Optional[str] = None) -> str:
+    def extract_text(self, image: bytes, manual_transcription: str | None = None) -> str:
         """Retorna a transcrição manual ou um texto determinístico de demonstração."""
         if manual_transcription and manual_transcription.strip():
             return manual_transcription.strip()
@@ -41,7 +39,7 @@ class MockOCRProvider(OCRProvider):
 class ManualTranscriptionOCRProvider(OCRProvider):
     """Provider que usa exclusivamente a transcrição fornecida pelo usuário."""
 
-    def extract_text(self, image: bytes, manual_transcription: Optional[str] = None) -> str:
+    def extract_text(self, image: bytes, manual_transcription: str | None = None) -> str:
         """Valida e devolve a transcrição fornecida pelo usuário."""
         if not manual_transcription or not manual_transcription.strip():
             raise ValueError("Informe uma transcrição manual para a imagem.")
