@@ -1,8 +1,6 @@
 """Casos de uso do fluxo manual de receitas."""
 
 from dataclasses import dataclass
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -15,10 +13,10 @@ from app.services.storage import delete_image
 class RecipeInput:
     """Dados normalizados usados para criar ou atualizar uma receita manual."""
     title: str
-    servings: Optional[int]
-    prep_time_minutes: Optional[int]
-    original_text: Optional[str]
-    origin_story: Optional[str]
+    servings: int | None
+    prep_time_minutes: int | None
+    original_text: str | None
+    origin_story: str | None
     ingredient_descriptions: list[str]
     ingredient_quantities: list[str]
     ingredient_units: list[str]
