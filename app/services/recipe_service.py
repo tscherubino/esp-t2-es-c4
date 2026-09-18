@@ -1,6 +1,7 @@
 """Casos de uso do fluxo manual de receitas."""
 
 from dataclasses import dataclass
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -11,7 +12,22 @@ from app.services.storage import delete_image
 
 @dataclass
 class RecipeInput:
-    """Dados normalizados usados para criar ou atualizar uma receita manual."""
+    """Representa os dados normalizados de uma receita manual.
+
+    Attributes:
+        title: Título da receita.
+        servings: Quantidade de porções, quando informada.
+        prep_time_minutes: Tempo de preparo em minutos, quando informado.
+        original_text: Texto original preservado, quando existente.
+        origin_story: História ou origem da receita, quando informada.
+        ingredient_descriptions: Descrições dos ingredientes.
+        ingredient_quantities: Quantidades correspondentes aos ingredientes.
+        ingredient_units: Unidades correspondentes aos ingredientes.
+        step_instructions: Instruções ordenadas do modo de preparo.
+        tags: Tags informadas para a receita.
+
+    """
+
     title: str
     servings: int | None
     prep_time_minutes: int | None
@@ -25,12 +41,31 @@ class RecipeInput:
 
 
 def clean_values(values: list[str]) -> list[str]:
-    """Remove espaços e entradas vazias de uma lista de valores do formulário."""
+    """Remove espaços e entradas vazias dos valores recebidos.
+
+    Args:
+        values: Valores textuais potencialmente vazios ou com espaços extras.
+
+    Returns:
+        Valores não vazios, com espaços externos removidos.
+
+    """
     return [value.strip() for value in values if value.strip()]
 
 
 def _replace_children(db: Session, recipe: Recipe, data: RecipeInput) -> None:
-    """Substitui ingredientes, etapas e tags preservando a posição dos itens."""
+    """Substitui ingredientes, etapas e tags editáveis da receita.
+
+    Args:
+        db: Sessão ativa do banco de dados.
+        recipe: Receita cujos componentes serão substituídos.
+        data: Dados normalizados dos componentes editáveis.
+
+    Notes:
+        A posição dos ingredientes e das etapas é recriada na ordem recebida.
+        Tags são normalizadas sem diferenciar maiúsculas de minúsculas.
+
+    """
     recipe.ingredients.clear()
     recipe.preparation_steps.clear()
     old_recipe_tags = list(recipe.recipe_tags)
@@ -68,7 +103,19 @@ def _replace_children(db: Session, recipe: Recipe, data: RecipeInput) -> None:
 
 
 def create_recipe(db: Session, user: User, data: RecipeInput, *, commit: bool = True) -> Recipe:
-    """Cria uma receita e seus dados filhos, confirmando a transação quando solicitado."""
+    """Cria uma receita e seus componentes editáveis.
+
+    Args:
+        db: Sessão ativa do banco de dados.
+        user: Usuário proprietário da receita.
+        data: Dados normalizados da receita.
+        commit: Quando verdadeiro, confirma a transação; caso contrário,
+            apenas envia as alterações para a sessão.
+
+    Returns:
+        A entidade `Recipe` criada e vinculada à sessão.
+
+    """
     recipe = Recipe(
         user_id=user.id,
         title=data.title.strip(),
@@ -87,7 +134,19 @@ def create_recipe(db: Session, user: User, data: RecipeInput, *, commit: bool = 
 
 
 def update_recipe(db: Session, recipe: Recipe, data: RecipeInput, *, commit: bool = True) -> Recipe:
-    """Atualiza os dados principais e substitui os componentes editáveis da receita."""
+    """Atualiza os dados principais e componentes editáveis da receita.
+
+    Args:
+        db: Sessão ativa do banco de dados.
+        recipe: Receita existente que será atualizada.
+        data: Novos dados normalizados da receita.
+        commit: Quando verdadeiro, confirma a transação; caso contrário,
+            apenas envia as alterações para a sessão.
+
+    Returns:
+        A entidade `Recipe` atualizada e vinculada à sessão.
+
+    """
     recipe.title = data.title.strip()
     recipe.servings = data.servings
     recipe.prep_time_minutes = data.prep_time_minutes
@@ -102,7 +161,17 @@ def update_recipe(db: Session, recipe: Recipe, data: RecipeInput, *, commit: boo
 
 
 def delete_recipe(db: Session, recipe: Recipe) -> None:
-    """Exclui a receita, imagens, jobs associados e referências em listas de compras."""
+    """Exclui a receita e trata seus dados relacionados.
+
+    Args:
+        db: Sessão ativa do banco de dados.
+        recipe: Receita que será excluída.
+
+    Notes:
+        Imagens e jobs de importação associados são removidos. Itens de listas
+        de compras são preservados, mas deixam de apontar para a receita.
+
+    """
     for image in recipe.images:
         delete_image(image.stored_filename)
     for import_job in list(recipe.import_jobs):
