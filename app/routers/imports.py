@@ -1,7 +1,7 @@
 """Rotas do Fluxo B — importação assistida e tela de revisão."""
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse
@@ -37,8 +37,8 @@ def import_form(request: Request):
 
 async def analyze_import(
     request: Request,
-    original_text: Annotated[Optional[str], Form()] = None,
-    manual_transcription: Annotated[Optional[str], Form()] = None,
+    original_text: Annotated[str | None, Form()] = None,
+    manual_transcription: Annotated[str | None, Form()] = None,
     image: UploadFile | None = None,
     db: Session = Depends(get_db),
 ):
@@ -83,9 +83,9 @@ def finalize_import(
     job_public_id: str,
     request: Request,
     title: Annotated[str, Form()],
-    servings: Annotated[Optional[int], Form()] = None,
-    prep_time_minutes: Annotated[Optional[int], Form()] = None,
-    origin_story: Annotated[Optional[str], Form()] = None,
+    servings: Annotated[int | None, Form()] = None,
+    prep_time_minutes: Annotated[int | None, Form()] = None,
+    origin_story: Annotated[str | None, Form()] = None,
     ingredient_names: Annotated[list[str], Form()] = [],
     ingredient_quantities: Annotated[list[str], Form()] = [],
     ingredient_units: Annotated[list[str], Form()] = [],
@@ -126,8 +126,8 @@ def finalize_import(
 
 @api_router.post("/analyze", response_model=ImportAnalysisResponse)
 async def analyze_import_json(
-    original_text: Annotated[Optional[str], Form()] = None,
-    manual_transcription: Annotated[Optional[str], Form()] = None,
+    original_text: Annotated[str | None, Form()] = None,
+    manual_transcription: Annotated[str | None, Form()] = None,
     image: UploadFile | None = None,
     db: Session = Depends(get_db),
 ) -> ImportAnalysisResponse:
