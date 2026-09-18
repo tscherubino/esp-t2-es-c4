@@ -2,7 +2,6 @@ from sqlalchemy import inspect
 
 from app.db.session import engine, initialize_database
 
-
 EXPECTED_TABLES = {
     "users",
     "recipes",

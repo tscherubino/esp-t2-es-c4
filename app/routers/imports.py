@@ -11,9 +11,12 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.session import get_db
 from app.repositories.recipe_repository import get_demo_user
-from app.schemas.imports import ImportAnalysisResponse, ImportReviewInput, StructuredRecipe
+from app.schemas.imports import (
+    ImportAnalysisResponse,
+    ImportReviewInput,
+    StructuredRecipe,
+)
 from app.services.import_service import RecipeImportService
-
 
 router = APIRouter(prefix="/recipes/import", tags=["imports"])
 api_router = APIRouter(prefix="/api/recipes/import", tags=["imports-api"])

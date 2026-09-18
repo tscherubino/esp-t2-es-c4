@@ -7,12 +7,27 @@ import pytest
 from sqlalchemy import select
 
 from app.db.session import SessionLocal
-from app.models import ShoppingList, ShoppingListItem
+from app.models import Ingredient, ShoppingList, ShoppingListItem
 from app.processors.providers import MockOCRProvider
 from app.repositories.recipe_repository import get_demo_user, get_recipe
-from app.schemas.imports import IngredientSuggestion, ImportReviewInput, PreparationStepSuggestion, StructuredRecipe
-from app.services.import_service import RecipeImportService, build_ocr_provider, build_recipe_parser
-from app.services.recipe_service import RecipeInput, clean_values, create_recipe, delete_recipe, update_recipe
+from app.schemas.imports import (
+    ImportReviewInput,
+    IngredientSuggestion,
+    PreparationStepSuggestion,
+    StructuredRecipe,
+)
+from app.services.import_service import (
+    RecipeImportService,
+    build_ocr_provider,
+    build_recipe_parser,
+)
+from app.services.recipe_service import (
+    RecipeInput,
+    clean_values,
+    create_recipe,
+    delete_recipe,
+    update_recipe,
+)
 from app.services.shopping_service import (
     ShoppingItemInput,
     add_item,
@@ -22,7 +37,6 @@ from app.services.shopping_service import (
     update_item,
 )
 from app.services.storage import delete_image, save_image_bytes
-from app.models import Ingredient
 
 
 def _recipe_input(suffix: str = "") -> RecipeInput:

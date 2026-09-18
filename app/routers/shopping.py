@@ -11,7 +11,11 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.session import get_db
 from app.repositories.recipe_repository import get_demo_user, list_recipes
-from app.repositories.shopping_repository import get_shopping_item, get_shopping_list, list_shopping_lists
+from app.repositories.shopping_repository import (
+    get_shopping_item,
+    get_shopping_list,
+    list_shopping_lists,
+)
 from app.services.shopping_service import (
     ShoppingItemInput,
     add_item,
@@ -22,7 +26,6 @@ from app.services.shopping_service import (
     toggle_item,
     update_item,
 )
-
 
 router = APIRouter(tags=["shopping-list"])
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")

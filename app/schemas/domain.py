@@ -1,6 +1,7 @@
 """Schemas Pydantic v2 correspondentes às entidades do MVP."""
 
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 
 

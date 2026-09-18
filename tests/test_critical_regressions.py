@@ -8,7 +8,6 @@ from app.main import app
 from app.models import ImportJob, Recipe, ShoppingList, ShoppingListItem
 from app.repositories.recipe_repository import get_demo_user
 
-
 PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"0" * 32
 
 

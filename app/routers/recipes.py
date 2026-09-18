@@ -10,12 +10,16 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
+from app.models import RecipeImage
 from app.repositories.recipe_repository import get_demo_user, get_recipe, list_recipes
 from app.schemas.domain import RecipeManualInput
-from app.services.recipe_service import RecipeInput, create_recipe, delete_recipe, update_recipe
+from app.services.recipe_service import (
+    RecipeInput,
+    create_recipe,
+    delete_recipe,
+    update_recipe,
+)
 from app.services.storage import delete_image, save_image
-from app.models import RecipeImage
-
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 api_router = APIRouter(prefix="/api/recipes", tags=["recipes-api"])

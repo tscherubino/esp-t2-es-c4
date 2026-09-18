@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-
 PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"0" * 32
 
 

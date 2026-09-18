@@ -12,7 +12,6 @@ from app.db.session import get_db, initialize_database
 from app.repositories.recipe_repository import get_demo_user, list_recipes
 from app.routers import imports, recipes, shopping
 
-
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=APP_DIR / "templates")
 

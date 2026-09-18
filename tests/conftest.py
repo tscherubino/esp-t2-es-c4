@@ -6,7 +6,6 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-
 _temporary_root = TemporaryDirectory(prefix="livro-vivo-testes-")
 _test_root = Path(_temporary_root.name)
 os.environ["DATABASE_URL"] = f"sqlite:///{(_test_root / 'app.db').as_posix()}"

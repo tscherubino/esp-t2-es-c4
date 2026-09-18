@@ -4,8 +4,8 @@ import re
 
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.db.session import SessionLocal
+from app.main import app
 from app.processors import (
     ManualTranscriptionOCRProvider,
     MockLLMRecipeParser,
@@ -14,7 +14,6 @@ from app.processors import (
 )
 from app.repositories.recipe_repository import get_demo_user
 from app.services.import_service import RecipeImportService
-
 
 RECIPE_TEXT = """Bolo simples
 Rende: 8 porções

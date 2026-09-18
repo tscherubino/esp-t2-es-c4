@@ -2,7 +2,6 @@ import pytest
 
 from app.services.storage import MAX_IMAGE_SIZE, delete_image, save_image_bytes
 
-
 PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"0" * 32
 
 

@@ -1,7 +1,8 @@
 """Contratos e implementações locais para OCR e estruturação de receitas."""
 
-from abc import ABC, abstractmethod
 import re
+from abc import ABC, abstractmethod
+
 from app.schemas.imports import (
     IngredientSuggestion,
     PreparationStepSuggestion,

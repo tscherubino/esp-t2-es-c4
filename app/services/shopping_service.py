@@ -1,8 +1,8 @@
 """Casos de uso da lista de compras simples do MVP."""
 
+import re
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
-import re
 
 from sqlalchemy.orm import Session
 
