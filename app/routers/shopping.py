@@ -1,7 +1,7 @@
 """Rotas web da lista de compras simples."""
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
@@ -47,7 +47,7 @@ def render_page(request: Request, db: Session, user, selected_list=None, error: 
 
 
 @router.get("/shopping-list")
-def shopping_list(request: Request, list_id: Optional[str] = None, db: Session = Depends(get_db)):
+def shopping_list(request: Request, list_id: str | None = None, db: Session = Depends(get_db)):
     """Exibe a lista de compras e seleciona uma lista pelo identificador opcional."""
     user = get_demo_user(db)
     selected = get_shopping_list(db, list_id, user) if list_id else None
@@ -77,7 +77,7 @@ def delete_shopping_list_route(list_public_id: str, db: Session = Depends(get_db
 
 
 @router.post("/shopping-list/{list_public_id}/items")
-def create_shopping_item(list_public_id: str, request: Request, description: Annotated[str, Form()], quantity: Annotated[Optional[str], Form()] = None, unit: Annotated[Optional[str], Form()] = None, notes: Annotated[Optional[str], Form()] = None, db: Session = Depends(get_db)):
+def create_shopping_item(list_public_id: str, request: Request, description: Annotated[str, Form()], quantity: Annotated[str | None, Form()] = None, unit: Annotated[str | None, Form()] = None, notes: Annotated[str | None, Form()] = None, db: Session = Depends(get_db)):
     """Adiciona um item manual à lista autorizada."""
     user = get_demo_user(db)
     shopping_list = get_shopping_list(db, list_public_id, user)
@@ -91,7 +91,7 @@ def create_shopping_item(list_public_id: str, request: Request, description: Ann
 
 
 @router.post("/shopping-list/{list_public_id}/items/{item_public_id}/edit")
-def edit_shopping_item(list_public_id: str, item_public_id: str, request: Request, description: Annotated[str, Form()], quantity: Annotated[Optional[str], Form()] = None, unit: Annotated[Optional[str], Form()] = None, notes: Annotated[Optional[str], Form()] = None, db: Session = Depends(get_db)):
+def edit_shopping_item(list_public_id: str, item_public_id: str, request: Request, description: Annotated[str, Form()], quantity: Annotated[str | None, Form()] = None, unit: Annotated[str | None, Form()] = None, notes: Annotated[str | None, Form()] = None, db: Session = Depends(get_db)):
     """Edita um item pertencente à lista autorizada."""
     user = get_demo_user(db)
     shopping_list = get_shopping_list(db, list_public_id, user)
